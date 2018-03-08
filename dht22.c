@@ -12,12 +12,28 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/time.h>
+#include <time.h>
 
 #include "locking.h"
 
 #define MAXTIMINGS 85
 static int DHTPIN = 2;
 static int dht22_dat[5] = {0,0,0,0,0};
+FILE* outputfile;
+
+void logFet(float temp, float humid)
+{
+   static float tempbf, humbf;
+   if(temp != tempbf || humid != humbf)
+   {
+      fprintf(outputfile, "%u;%.2f;%.2f\n", (unsigned)time(NULL), temp, humid);
+      fflush(outputfile);
+      tempbf = temp;
+      humbf = humid;
+   }
+}
 
 static uint8_t sizecvt(const int read)
 {
@@ -38,7 +54,7 @@ static int read_dht22_dat()
   uint8_t counter = 0;
   uint8_t j = 0, i;
 
-  dht22_dat[0] = dht22_dat[1] = dht22_dat[2] = dht22_dat[3] = dht22_dat[4] = 0;
+  memset(dht22_dat, 0, 5 * sizeof(int));
 
   // pull pin down for 18 milliseconds
   pinMode(DHTPIN, OUTPUT);
@@ -79,21 +95,23 @@ static int read_dht22_dat()
   // check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
   // print it out if data is good
   if ((j >= 40) && 
-      (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) ) {
-        float t, h;
-        h = (float)dht22_dat[0] * 256 + (float)dht22_dat[1];
-        h /= 10;
-        t = (float)(dht22_dat[2] & 0x7F)* 256 + (float)dht22_dat[3];
-        t /= 10.0;
-        if ((dht22_dat[2] & 0x80) != 0)  t *= -1;
-
-
-    printf("Humidity = %.2f %% Temperature = %.2f *C \n", h, t );
+      (dht22_dat[4] == ((dht22_dat[0] + dht22_dat[1] + dht22_dat[2] + dht22_dat[3]) & 0xFF)) )
+  {
+    float t, h;
+    h = (float)dht22_dat[0] * 256 + (float)dht22_dat[1];
+    h /= 10;
+    t = (float)(dht22_dat[2] & 0x7F)* 256 + (float)dht22_dat[3];
+    t /= 10.0;
+    if ((dht22_dat[2] & 0x80) != 0)
+    {
+      t *= -1;
+    }
+    logFet(t, h);
     return 1;
   }
   else
   {
-    printf("Data not good, skip\n");
+    fprintf(stderr, "Data not good, skip\n");
     return 0;
   }
 }
@@ -104,35 +122,63 @@ int main (int argc, char *argv[])
   int tries = 100;
 
   if (argc < 2)
-    printf ("usage: %s <pin> (<tries>)\ndescription: pin is the wiringPi pin number\nusing 7 (GPIO 4)\nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0]);
+    printf ("usage: %s <pin> (<tries> <outputfile>)\ndescription: pin is the wiringPi pin number\nusing %d \nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0], DHTPIN);
   else
     DHTPIN = atoi(argv[1]);
    
 
-  if (argc == 3)
+  if (argc >= 3)
     tries = atoi(argv[2]);
 
-  if (tries < 1) {
-    printf("Invalid tries supplied\n");
-    exit(EXIT_FAILURE);
+  if(argc >= 4)
+  {
+    char filename[strlen(argv[3])+20];
+    sprintf(filename, "%s%u.csv", argv[3], (unsigned)time(NULL));
+    outputfile = fopen(filename, "a");
+    if(outputfile < 0)
+    {
+      fprintf(stderr, "Could not open file.\n");
+      exit(EXIT_FAILURE);
+    }
+    fprintf(stdout, "Using file %s as output.\n", filename);
+  }
+  else
+  {
+    outputfile = stdout;
   }
 
-  printf ("Raspberry Pi wiringPi DHT22 reader\nwww.lolware.net\n") ;
+  if (tries < 0)
+  {
+    fprintf(stderr, "Endless mode active.\n");
+  }
 
   lockfd = open_lockfile(LOCKFILE);
 
   if (wiringPiSetup () == -1)
     exit(EXIT_FAILURE) ;
-	
+
   if (setuid(getuid()) < 0)
   {
     perror("Dropping privileges failed\n");
     exit(EXIT_FAILURE);
   }
 
-  while (read_dht22_dat() == 0 && tries--) 
+  fprintf(outputfile, "\"Unix Timestamp\";\"Temperature in °C\";\"Humidity in %%rel\"\n");
+
+  pinMode(11, OUTPUT);
+
+  while (read_dht22_dat() == 0 || tries < 0) 
   {
-     delay(1000); // wait 1sec to refresh
+     if(tries >= 0)
+     {
+          if(tries-- == 0)
+	  {
+              break;
+	  }
+     }
+  digitalWrite(11, LOW);
+  delay(1000); // wait 1sec to refresh
+  digitalWrite(11, HIGH);
   }
 
   delay(1500);
