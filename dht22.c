@@ -28,7 +28,7 @@ void logFet(float temp, float humid)
    static float tempbf, humbf;
    if(temp != tempbf || humid != humbf)
    {
-      fprintf(outputfile, "%u;%.2f;%.2f\n", (unsigned)time(NULL), temp, humid);
+      fprintf(outputfile, "%u,%.2f,%.2f\n", (unsigned)time(NULL), temp, humid);
       fflush(outputfile);
       tempbf = temp;
       humbf = humid;
@@ -120,9 +120,10 @@ int main (int argc, char *argv[])
 {
   int lockfd;
   int tries = 100;
+  int msdelay = 1000;
 
   if (argc < 2)
-    printf ("usage: %s <pin> (<tries> <outputfile>)\ndescription: pin is the wiringPi pin number\nusing %d \nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0], DHTPIN);
+    printf ("usage: %s <pin> (<tries> <outputfile> <delay in seconds>)\ndescription: pin is the wiringPi pin number\nusing %d \nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0], DHTPIN);
   else
     DHTPIN = atoi(argv[1]);
    
@@ -152,6 +153,12 @@ int main (int argc, char *argv[])
     fprintf(stderr, "Endless mode active.\n");
   }
 
+  if(argc >= 5)
+  {
+    msdelay = atoi(argv[4])*1000;
+    fprintf(stdout, "Sensing once every %d seconds.\n", msdelay / 1000);
+  }
+
   lockfd = open_lockfile(LOCKFILE);
 
   if (wiringPiSetup () == -1)
@@ -163,7 +170,7 @@ int main (int argc, char *argv[])
     exit(EXIT_FAILURE);
   }
 
-  fprintf(outputfile, "\"Unix Timestamp\";\"Temperature in °C\";\"Humidity in %%rel\"\n");
+  fprintf(outputfile, "\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
 
   pinMode(11, OUTPUT);
 
@@ -177,7 +184,7 @@ int main (int argc, char *argv[])
 	  }
      }
   digitalWrite(11, LOW);
-  delay(1000); // wait 1sec to refresh
+  delay(msdelay); // wait 1sec to refresh
   digitalWrite(11, HIGH);
   }
 
