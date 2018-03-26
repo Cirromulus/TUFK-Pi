@@ -26,7 +26,6 @@ int read_dht22_dat(TempHumid& out, int pin)
 
   int dht22_dat[5];
   memset(dht22_dat, 0, 5 * sizeof(int));
-  memset(&out, 0, sizeof(TempHumid));
 
   // pull pin down for 18 milliseconds
   pinMode(pin, OUTPUT);
@@ -78,12 +77,12 @@ int read_dht22_dat(TempHumid& out, int pin)
     {
       t *= -1;
     }
-    out.temp = t;
-	out.humid = h;
-    return 1;
+    out = TempHumid(t, h);
+    return 0;
   }
   else
   {
-    return 0;
+	out = TempHumid();
+    return -1;
   }
 }

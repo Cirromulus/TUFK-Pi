@@ -8,12 +8,7 @@
 #pragma once
 
 #include <wiringPi.h>
+#include "temptypes.hpp"
 #define MAXTIMINGS 85
-
-struct TempHumid
-{
-	float temp;
-	float humid;
-};
 
 int read_dht22_dat(TempHumid& out, int pin);
