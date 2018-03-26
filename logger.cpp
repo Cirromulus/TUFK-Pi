@@ -6,11 +6,16 @@
 #include <string.h>
 #include <sys/time.h>
 #include <time.h>
+#include <errno.h>
+#include <signal.h>
 
 #include "dht22.hpp"
+#include "actuators.hpp"
 
 static int DHTPIN = 2;
 FILE* outputfile;
+
+volatile sig_atomic_t done;
 
 void logTH(TempHumid& th)
 {
@@ -24,11 +29,22 @@ void logTH(TempHumid& th)
    }
 }
 
+void term(int signum)
+{
+	fprintf(stderr, "Received signal %d\n", signum);
+	done = true;
+}
 
 int main (int argc, char *argv[])
 {
 	int msdelay = 1000;
-
+	done = false;
+	struct sigaction action;
+	memset(&action, 0, sizeof(struct sigaction));
+	action.sa_handler = term;
+	sigaction(SIGTERM, &action, NULL);
+	sigaction(SIGINT, &action, NULL);
+	
 	if (argc < 2)
 	{
 		printf ("usage: %s (<outputfile> <delay in seconds>)\ndescription: pin is the wiringPi pin number\nusing %d \nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0], DHTPIN);
@@ -62,12 +78,12 @@ int main (int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	pinMode(10, OUTPUT);
-	pinMode(11, OUTPUT);
+	Led white(11);
+	Led red(10);
 
 	fprintf(outputfile, "\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
 	TempHumid th;
-	while (true) 
+	while (!done) 
 	{
 		int ret = read_dht22_dat(th, DHTPIN);
 		if(ret < 0)
@@ -75,17 +91,21 @@ int main (int argc, char *argv[])
 			continue;
 		}
 		logTH(th);
-		digitalWrite(11, LOW);
+		white.actuate(false);
 		unsigned delayed = 0;
 		while(delayed < msdelay)
 		{
-			digitalWrite(10, HIGH);
+			if(done)
+			{
+				break;
+			}
+			red.actuate(true);
 			delay(500);
-			digitalWrite(10, LOW);
+			red.actuate(false);
 			delay(500);
 			delayed += 1000;
 		}
-		digitalWrite(11, HIGH);
+		white.actuate(true);
 	}
 	return 0 ;
 }
