@@ -172,7 +172,10 @@ int main (int argc, char *argv[])
 
   fprintf(outputfile, "\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
 
+  pinMode(10, OUTPUT);
   pinMode(11, OUTPUT);
+  pinMode(15, INPUT);
+  pullUpDnControl (15, PUD_OFF);
 
   while (read_dht22_dat() == 0 || tries < 0) 
   {
@@ -184,7 +187,16 @@ int main (int argc, char *argv[])
 	  }
      }
   digitalWrite(11, LOW);
-  delay(msdelay); // wait 1sec to refresh
+  unsigned delayed = 0;
+  while(delayed < msdelay)
+  {
+    printf("PIR: %d\n", digitalRead(15));
+    digitalWrite(10, HIGH);
+    delay(500);
+    digitalWrite(10, LOW);
+    delay(500);
+    delayed += 1000;
+  }
   digitalWrite(11, HIGH);
   }
 
