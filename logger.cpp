@@ -47,7 +47,7 @@ int main (int argc, char *argv[])
 	
 	if (argc < 2)
 	{
-		printf ("usage: %s (<outputfile> <delay in seconds>)\ndescription: pin is the wiringPi pin number\nusing %d \nOptional: tries is the number of times to try to obtain a read (default 100)",argv[0], DHTPIN);
+		printf ("usage: %s (<outputfile> <delay in seconds>)\n",argv[0], DHTPIN);
 	}
 
 	if(argc >= 2)

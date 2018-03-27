@@ -35,7 +35,9 @@ protected:
 public:
 	inline
 	Led(int pin) : pin(pin)
-	{};
+	{
+		setup();
+	};
 	inline
 	~Led()
 	{
@@ -61,7 +63,9 @@ class Relaisswitch : public Actuator
 public:
 	inline
 	Relaisswitch(int pin) : pin(pin)
-	{};
+	{
+		setup();
+	};
 	inline
 	~Relaisswitch()
 	{
