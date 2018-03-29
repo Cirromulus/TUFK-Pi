@@ -73,7 +73,7 @@ int main (int argc, char *argv[])
 	Led white(WHTPIN);
 	Led red(REDPIN);
 	Relaisswitch vent(VNTPIN);
-	Heater heat(HETPIN);
+	Heater heat(HETPIN, &red);
 	
 	
 	pinMode(FRGPIN, OUTPUT);
@@ -81,7 +81,7 @@ int main (int argc, char *argv[])
 	pinMode(ALMPIN, OUTPUT);
 	digitalWrite(ALMPIN, HIGH);
 	
-	Tempcontrol tempcontrol(&vent, &heat);
+	Tempcontrol tempcontrol(&heat, &vent);
 
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
 	TempHumid th;
@@ -103,11 +103,8 @@ int main (int argc, char *argv[])
 			{
 				break;
 			}
-			red.actuate(true);
 			delay(500);
-			red.actuate(false);
-			delay(500);
-			delayed += 1000;
+			delayed += 500;
 		}
 		white.actuate(true);
 	}

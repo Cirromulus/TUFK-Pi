@@ -82,16 +82,22 @@ public:
 	{
 		digitalWrite(pin, !status);
 		active = status;
-		fprintf(stderr, "Toggled relais %d\n", pin);
+		fprintf(stderr, "Toggled relais %d %s\n", pin, status ? "ON" : "OFF");
 	}
 };
 
 class Heater : public Relaisswitch
 {
 	bool heating = false;
+	Led* statusLed = nullptr;
 public:
 	inline
 	Heater(int pin) : Relaisswitch(pin)
+	{
+		Relaisswitch::actuate(true);
+		active = false;
+	}
+	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
 	{
 		Relaisswitch::actuate(true);
 		active = false;
@@ -110,21 +116,21 @@ public:
 	inline void
 	actuate(bool status)
 	{
+		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
 		if(status != active)
 		{
 			system("irsend SEND_ONCE HEATER ONOFF");
 			active = status;
-			fprintf(stderr, "Toggled Heater\n");
+			if(statusLed != nullptr)
+			{
+				statusLed->actuate(status);
+			}
 		}
 	}
 };
 	
 class Tempcontrol
 {
-	bool isVentOn = false;
-	bool isHeaterOn = false;
-	bool tooMoist = false;
-
 	Actuator* heat;
 	Actuator* vent;
 	
