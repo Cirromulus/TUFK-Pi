@@ -1,5 +1,3 @@
-#include <wiringPi.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -11,6 +9,7 @@
 
 #include "dht22.hpp"
 #include "actuators.hpp"
+#include "sensors.hpp"
 #include "tinyxml2/tinyxml2.h"
 
 static int DHTPIN = 2;
@@ -20,6 +19,7 @@ static int VNTPIN = 12;
 static int FRGPIN = 13;
 static int ALMPIN = 14;
 static int HETPIN = 6;
+static int SMOKEP = 8;
 
 volatile sig_atomic_t done;
 
@@ -41,6 +41,17 @@ void term(int signum)
 	done = true;
 }
 
+void ohNoez()
+{
+	fprintf(stderr, "Oh NOEZ, es brennt!\n");
+	term(118);
+	term(999);
+	term(881);
+	term(999);
+	term(119);
+	term(725);
+	term(3);
+}
 
 int main (int argc, char *argv[])
 {
@@ -74,13 +85,18 @@ int main (int argc, char *argv[])
 	Led red(REDPIN);
 	Relaisswitch vent(VNTPIN);
 	Heater heat(HETPIN, &red);
+	Relaisswitch fridge(FRGPIN);
+	Relaisswitch alarm(ALMPIN);
+
+	SmokeDetector smokeDetector(SMOKEP);
+	if(smokeDetector.getValue())
+	{
+		fprintf(stderr, "Oh NOEZ, es brennt!\n");
+		return EXIT_FAILURE;
+	}
+	smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
 	
-	
-	pinMode(FRGPIN, OUTPUT);
-	digitalWrite(FRGPIN, HIGH);
-	pinMode(ALMPIN, OUTPUT);
-	digitalWrite(ALMPIN, HIGH);
-	
+
 	Tempcontrol tempcontrol(&heat, &vent);
 
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");

@@ -1,9 +1,10 @@
+#pragma once
+
 #include <wiringPi.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include "temptypes.hpp"
-#pragma once
 
 class Actuator
 {
@@ -38,7 +39,7 @@ public:
 	{
 		setup();
 	};
-	inline
+	virtual inline
 	~Led()
 	{
 		actuate(false);
@@ -66,19 +67,19 @@ public:
 	{
 		setup();
 	};
-	inline
+	virtual inline
 	~Relaisswitch()
 	{
 		actuate(false);
 	};
-	inline void
-	setup()
+	inline void 
+	setup() override
 	{
 		pinMode(pin, OUTPUT);
 		Actuator::setup();
 	}
 	inline void
-	actuate(bool status)
+	actuate(bool status) override
 	{
 		digitalWrite(pin, !status);
 		active = status;
@@ -97,6 +98,7 @@ public:
 		Relaisswitch::actuate(true);
 		active = false;
 	}
+	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
 	{
 		Relaisswitch::actuate(true);
@@ -111,10 +113,9 @@ public:
 			fprintf(stderr, "Waiting for Heater to cool down...\n");
 			delay(15000);
 		}
-		Relaisswitch::actuate(false);
 	}
 	inline void
-	actuate(bool status)
+	actuate(bool status) override
 	{
 		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
 		if(status != active)
