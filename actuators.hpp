@@ -29,18 +29,18 @@ public:
 	{};
 };
 
-class Led : public Actuator
+class PinActuator : public Actuator
 {
 protected:
 	int pin;
 public:
 	inline
-	Led(int pin) : pin(pin)
+	PinActuator(int pin) : pin(pin)
 	{
 		setup();
 	};
 	virtual inline
-	~Led()
+	~PinActuator()
 	{
 		actuate(false);
 	}
@@ -58,31 +58,78 @@ public:
 	}
 };
 
-class Relaisswitch : public Actuator
+class NoResetActuator : public Actuator
 {
+protected:
 	int pin;
 public:
 	inline
-	Relaisswitch(int pin) : pin(pin)
+	NoResetActuator (int pin) : pin(pin)
 	{
 		setup();
 	};
 	virtual inline
-	~Relaisswitch()
-	{
-		actuate(false);
-	};
-	inline void 
-	setup() override
+	~NoResetActuator ()
+	{}
+	inline void
+	setup()
 	{
 		pinMode(pin, OUTPUT);
 		Actuator::setup();
 	}
 	inline void
-	actuate(bool status) override
+	actuate(bool status)
+	{
+		digitalWrite(pin, status);
+		active = status;
+	}
+};
+
+class InvertedActuator : public Actuator
+{
+protected:
+	int pin;
+public:
+	inline
+	InvertedActuator(int pin) : pin(pin)
+	{
+		setup();
+	};
+	virtual inline
+	~InvertedActuator()
+	{
+		actuate(false);
+	}
+	inline void
+	setup()
+	{
+		pinMode(pin, OUTPUT);
+		Actuator::setup();
+	}
+	inline void
+	actuate(bool status)
 	{
 		digitalWrite(pin, !status);
 		active = status;
+	}
+};
+
+class Led : public PinActuator
+{
+public:
+	Led(int pin) : PinActuator(pin){};
+};
+
+class Relaisswitch : public InvertedActuator
+{
+public:
+	inline
+	Relaisswitch(int pin) : InvertedActuator(pin){};
+	
+	inline void
+	actuate(bool status) override
+	{
+		InvertedActuator::actuate(status);
 		fprintf(stderr, "Toggled relais %d %s\n", pin, status ? "ON" : "OFF");
 	}
 };

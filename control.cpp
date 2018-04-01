@@ -24,6 +24,7 @@ static int ALMPIN = 14;
 static int HETPIN = 6;
 static int SMOKEP = 8;
 static int PIRPIN = 3;
+static int BEEPIN = 4;
 
 volatile sig_atomic_t done;
 
@@ -45,8 +46,13 @@ void term(int signum)
 	done = true;
 }
 
+Actuator* globalBeeper = nullptr;
 void ohNoez()
 {
+	if(globalBeeper != nullptr)
+	{
+		globalBeeper->actuate(true);
+	}
 	fprintf(stderr, "Oh NOEZ, es brennt!\n");
 	term(118);
 	term(999);
@@ -107,7 +113,8 @@ int main (int argc, char *argv[])
 		exit(EXIT_FAILURE);
 	}
 
-	
+	NoResetActuator beeper(BEEPIN);
+	globalBeeper = &beeper;
 	Led white(WHTPIN);
 	Led red(REDPIN);
 	Led green(GRNPIN);
@@ -119,6 +126,7 @@ int main (int argc, char *argv[])
 	SmokeDetector smokeDetector(SMOKEP);
 	if(smokeDetector.getValue())
 	{
+		beeper.actuate(true);
 		fprintf(stderr, "Oh NOEZ, es brennt!\n");
 		return EXIT_FAILURE;
 	}
