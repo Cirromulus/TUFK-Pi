@@ -1,3 +1,8 @@
+#include "dht22.hpp"
+#include "actuators.hpp"
+#include "sensors.hpp"
+#include "tinyxml2/tinyxml2.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -6,20 +11,19 @@
 #include <time.h>
 #include <errno.h>
 #include <signal.h>
+#include <functional>
 
-#include "dht22.hpp"
-#include "actuators.hpp"
-#include "sensors.hpp"
-#include "tinyxml2/tinyxml2.h"
 
 static int DHTPIN = 2;
 static int REDPIN = 10;
 static int WHTPIN = 11;
+static int GRNPIN = 5;
 static int VNTPIN = 12;
 static int FRGPIN = 13;
 static int ALMPIN = 14;
 static int HETPIN = 6;
 static int SMOKEP = 8;
+static int PIRPIN = 3;
 
 volatile sig_atomic_t done;
 
@@ -53,6 +57,29 @@ void ohNoez()
 	term(3);
 }
 
+//Ugly
+Sensor* movementSensor = nullptr;
+Led* movementLed = nullptr;
+void movementChanged()
+{
+	if(movementSensor != nullptr)
+	{
+		int val = movementSensor->getValue();
+		if(val)
+		{
+			fprintf(stderr, "Movement detected\n");
+		}
+		else
+		{
+			fprintf(stderr, "Movement ended (probably)\n");
+		}
+		if(movementLed != nullptr)
+		{
+			movementLed->actuate(val);
+		}
+	}
+}
+
 int main (int argc, char *argv[])
 {
 	int msdelay = 2000;
@@ -83,6 +110,7 @@ int main (int argc, char *argv[])
 	
 	Led white(WHTPIN);
 	Led red(REDPIN);
+	Led green(GRNPIN);
 	Relaisswitch vent(VNTPIN);
 	Heater heat(HETPIN, &red);
 	Relaisswitch fridge(FRGPIN);
@@ -95,6 +123,10 @@ int main (int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 	smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
+	Sensor pir(PIRPIN);
+	movementSensor = &pir;
+	movementLed = &green;
+	pir.registerInterrupt(Sensor::Sensitivity::both, movementChanged);
 	
 
 	Tempcontrol tempcontrol(&heat, &vent);
