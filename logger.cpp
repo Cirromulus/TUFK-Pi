@@ -22,7 +22,7 @@ void logTH(TempHumid& th)
    static float tempbf, humbf;
    if(th.temp != tempbf || th.humid != humbf)
    {
-      fprintf(outputfile, "%u,%.2f,%.2f\n", (unsigned)time(NULL), th.temp, th.humid);
+      fprintf(outputfile, "%u,%.1f,%.1f\n", (unsigned)time(NULL), th.temp, th.humid);
       fflush(outputfile);
       tempbf = th.temp;
       humbf = th.humid;

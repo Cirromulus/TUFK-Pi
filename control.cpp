@@ -54,6 +54,7 @@ void ohNoez()
 		globalBeeper->actuate(true);
 	}
 	fprintf(stderr, "Oh NOEZ, es brennt!\n");
+	term(0);
 	term(118);
 	term(999);
 	term(881);
