@@ -13,4 +13,6 @@ logger: logger.cpp dht
 
 control: control.cpp dht actuators
 	g++ $(CFLAGS) -o controller -std=c++11 dht22.o actuators.o control.cpp -lwiringPi
-	
+
+tester: test.cpp dht actuators
+	g++ $(CFLAGS) -o tester -std=c++11 dht22.o actuators.o test.cpp -lwiringPi

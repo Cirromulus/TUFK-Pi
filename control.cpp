@@ -47,8 +47,20 @@ void term(int signum)
 }
 
 Actuator* globalBeeper = nullptr;
+Sensor* globalSmoke = nullptr;
 void ohNoez()
 {
+	if(globalSmoke != nullptr)
+	{
+		//dehysterese
+		printf("Smoke: %s\n", globalSmoke->getValue() ? "yes" : "no");
+		if(!globalSmoke->getValue())
+		{
+			return;
+		}
+		//FIXME: This disables the Firealarm.
+		return;
+	}
 	if(globalBeeper != nullptr)
 	{
 		globalBeeper->actuate(true);
@@ -125,6 +137,7 @@ int main (int argc, char *argv[])
 	Relaisswitch alarm(ALMPIN);
 
 	SmokeDetector smokeDetector(SMOKEP);
+	globalSmoke = &smokeDetector;
 	if(smokeDetector.getValue())
 	{
 		beeper.actuate(true);
@@ -160,8 +173,8 @@ int main (int argc, char *argv[])
 			{
 				break;
 			}
-			delay(500);
-			delayed += 500;
+			delay(250);
+			delayed += 250;
 		}
 		white.actuate(true);
 	}
