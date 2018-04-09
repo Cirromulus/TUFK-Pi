@@ -153,6 +153,26 @@ public:
 		Relaisswitch::actuate(true);
 		active = false;
 	}
+	inline void
+	blinkDelay(unsigned millis)
+	{
+		if(statusLed == nullptr)
+		{
+			delay(millis);
+		}
+		else
+		{
+			unsigned delayed = 0;
+			while(delayed < millis)
+			{
+				statusLed->actuate(true);
+				delay(500);
+				statusLed->actuate(false);
+				delay(500);
+				delayed += 1000;
+			}
+		}
+	}
 	inline
 	~Heater()
 	{
@@ -160,7 +180,7 @@ public:
 		{
 			actuate(false);
 			fprintf(stderr, "Waiting for Heater to cool down...\n");
-			delay(15000);
+			blinkDelay(31000);
 		}
 	}
 	inline void
@@ -169,15 +189,22 @@ public:
 		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
 		if(status && justStartedUp)
 		{
-			delay(800);
+			fprintf(stderr, "Waiting for Heater to start up...\n");
+			blinkDelay(10500);
 		}
 		if(status != active)
 		{
 			system("irsend SEND_ONCE HEATER ONOFF");
 			if(status)
 			{
-				delay(500);
+				delay(250);
 				system("irsend SEND_ONCE HEATER UP");
+				delay(250);
+				system("irsend SEND_ONCE HEATER SWING");
+				//delay(250);
+				//system("irsend SEND_ONCE HEATER MODE");
+				//delay(250);
+				//system("irsend SEND_ONCE HEATER MODE");
 			}
 			active = status;
 			if(statusLed != nullptr)

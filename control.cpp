@@ -21,14 +21,8 @@ volatile sig_atomic_t done;
 
 void logTH(const TempHumid& th)
 {
-   static float tempbf, humbf;
-   if(th.temp != tempbf || th.humid != humbf)
-   {
-      printf("%u,%.2f,%.2f\n", (unsigned)time(NULL), th.temp, th.humid);
-      fflush(stdout);
-      tempbf = th.temp;
-      humbf = th.humid;
-   }
+	printf("%u,%.2f,%.2f\n", (unsigned)time(NULL), th.temp, th.humid);
+	fflush(stdout);
 }
 
 void term(int signum)
@@ -145,16 +139,20 @@ int main (int argc, char *argv[])
 	Tempcontrol tempcontrol(&heat, &vent);
 
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
-	TempHumid th;
+	TempHumid curr, last;
 	while (!done) 
 	{
-		int ret = read_dht22_dat(th, DHTPIN);
+		int ret = read_dht22_dat(curr, DHTPIN);
 		if(ret < 0)
 		{
 			continue;
 		}
-		logTH(th);
-		tempcontrol.calcActions(th, target);	
+		if(curr != last)
+		{
+			logTH(curr);
+			tempcontrol.calcActions(curr, target);
+			last = curr;
+		}
 		
 		white.actuate(false);
 		unsigned delayed = 0;

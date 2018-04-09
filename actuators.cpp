@@ -4,7 +4,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 {
 	bool heaterTarget = heat->getStatus();
 	bool ventilTarget = false;
-	
+	bool tooMoist = ist.humid > soll.humid + 10;
 	
 	if(!heat->getStatus() && ist.temp < soll.temp - 1)
 	{
@@ -17,13 +17,13 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		heaterTarget = false;
 	}
 	
-	if(ist.humid > soll.humid + 10)
+	if(tooMoist)
 	{
 		fprintf(stderr, "Too Moist, suggesting Heater ON\n");
 		heaterTarget = true;
 	}
 	
-	if(ist.temp > soll.temp + 2)
+	if(tooMoist && ist.temp > soll.temp + 2)
 	{
 		fprintf(stderr, "Too hot (+2) suggesting Vent ON\n");
 		ventilTarget = true;
