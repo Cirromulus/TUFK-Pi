@@ -1,10 +1,11 @@
 #pragma once
 
+#include "temptypes.hpp"
+
 #include <wiringPi.h>
 #include <stdlib.h>
 #include <stdio.h>
-
-#include "temptypes.hpp"
+#include<time.h>
 
 class Actuator
 {
@@ -138,12 +139,14 @@ class Heater : public Relaisswitch
 {
 	bool heating = false;
 	Led* statusLed = nullptr;
+	clock_t startedUp;
 public:
 	inline
 	Heater(int pin) : Relaisswitch(pin)
 	{
 		Relaisswitch::actuate(true);
 		active = false;
+		startedUp = clock();
 	}
 	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
@@ -165,9 +168,22 @@ public:
 	actuate(bool status) override
 	{
 		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
+		if(status)
+		{
+			float timeSinceStartedMsec = (float)(clock()-startedUp) / (CLOCKS_PER_SEC * 1000.);
+			if(timeSinceStartedMsec < 800)
+			{
+				delay(800 - timeSinceStartedMsec);
+			}
+		}
 		if(status != active)
 		{
 			system("irsend SEND_ONCE HEATER ONOFF");
+			if(status)
+			{
+				delay(500);
+				system("irsend SEND_ONCE HEATER UP");
+			}
 			active = status;
 			if(statusLed != nullptr)
 			{

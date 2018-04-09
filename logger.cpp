@@ -11,8 +11,8 @@
 
 #include "dht22.hpp"
 #include "actuators.hpp"
+#include "config.hpp"
 
-static int DHTPIN = 2;
 FILE* outputfile;
 
 volatile sig_atomic_t done;
