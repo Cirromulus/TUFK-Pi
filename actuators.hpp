@@ -5,7 +5,6 @@
 #include <wiringPi.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include<time.h>
 
 class Actuator
 {
@@ -139,14 +138,14 @@ class Heater : public Relaisswitch
 {
 	bool heating = false;
 	Led* statusLed = nullptr;
-	clock_t startedUp;
+	bool justStartedUp = true;
 public:
 	inline
 	Heater(int pin) : Relaisswitch(pin)
 	{
 		Relaisswitch::actuate(true);
 		active = false;
-		startedUp = clock();
+		justStartedUp = true;
 	}
 	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
@@ -168,13 +167,9 @@ public:
 	actuate(bool status) override
 	{
 		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
-		if(status)
+		if(status && justStartedUp)
 		{
-			float timeSinceStartedMsec = (float)(clock()-startedUp) / (CLOCKS_PER_SEC * 1000.);
-			if(timeSinceStartedMsec < 800)
-			{
-				delay(800 - timeSinceStartedMsec);
-			}
+			delay(800);
 		}
 		if(status != active)
 		{
