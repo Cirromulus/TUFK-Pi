@@ -16,6 +16,10 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		fprintf(stderr, "Too hot (+1), suggesting Heater OFF\n");
 		heaterTarget = false;
 	}
+	else if(heaterTarget)
+	{
+		fprintf(stderr, "Debounce, keeping Heater ON\n");
+	}
 	
 	if(tooMoist)
 	{

@@ -179,8 +179,10 @@ public:
 		if(active)
 		{
 			actuate(false);
-			fprintf(stderr, "Waiting for Heater to cool down...\n");
+			fprintf(stderr, "Waiting for Heater to cool down... ");
+			fflush(stderr);
 			blinkDelay(31000);
+			fprintf(stderr, "Done\n");
 		}
 	}
 	inline void
@@ -189,12 +191,16 @@ public:
 		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
 		if(status && justStartedUp)
 		{
-			fprintf(stderr, "Waiting for Heater to start up...\n");
+			fprintf(stderr, "Waiting for Heater to start up... ");
+			fflush(stderr);
 			blinkDelay(10500);
+			fprintf(stderr, "Done\n");
 		}
 		if(status != active)
 		{
-			system("irsend SEND_ONCE HEATER ONOFF");
+			system("irsend SEND_START HEATER ONOFF");
+			delay(250);
+			system("irsend SEND_STOP HEATER ONOFF");
 			if(status)
 			{
 				delay(250);

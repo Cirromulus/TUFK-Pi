@@ -1,4 +1,4 @@
-//TODO: heater needs time and a plus signal. get long twowire cable.
+//TODO: get long twowire cable for IR-Led
 
 #include "dht22.hpp"
 #include "actuators.hpp"
@@ -19,9 +19,14 @@
 
 volatile sig_atomic_t done;
 
-void logTH(const TempHumid& th)
+void printCsvHeader()
 {
-	printf("%u,%.2f,%.2f\n", (unsigned)time(NULL), th.temp, th.humid);
+	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
+}
+
+void logCsv(const TempHumid& th, bool isHeaterOn, bool isVentOn)
+{
+	printf("%u,%.2f,%.2f,%d,%d\n", (unsigned)time(NULL), th.temp, th.humid, isHeaterOn, isVentOn);
 	fflush(stdout);
 }
 
@@ -134,11 +139,10 @@ int main (int argc, char *argv[])
 	movementSensor = &pir;
 	movementLed = &green;
 	pir.registerInterrupt(Sensor::Sensitivity::both, movementChanged);
-	
+
 
 	Tempcontrol tempcontrol(&heat, &vent);
-
-	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
+	printCsvHeader();
 	TempHumid curr, last;
 	while (!done) 
 	{
@@ -149,11 +153,11 @@ int main (int argc, char *argv[])
 		}
 		if(curr != last)
 		{
-			logTH(curr);
+			logCsv(curr, heat.getStatus(), vent.getStatus());
 			tempcontrol.calcActions(curr, target);
 			last = curr;
 		}
-		
+
 		white.actuate(false);
 		unsigned delayed = 0;
 		while(delayed < msdelay)
@@ -167,6 +171,6 @@ int main (int argc, char *argv[])
 		}
 		white.actuate(true);
 	}
-	
+
 	return 0 ;
 }
