@@ -203,10 +203,17 @@ public:
 			system("irsend SEND_STOP HEATER ONOFF");
 			if(status)
 			{
+				system("irsend SEND_START HEATER UP");
+				delay(150);
+				system("irsend SEND_STOP HEATER UP");
 				delay(250);
-				system("irsend SEND_ONCE HEATER UP");
+				system("irsend SEND_START HEATER DOWN");
+				delay(150);
+				system("irsend SEND_STOP HEATER DOWN");
 				delay(250);
-				system("irsend SEND_ONCE HEATER SWING");
+				system("irsend SEND_START HEATER SWING");
+				delay(150);
+				system("irsend SEND_STOP HEATER SWING");
 				//delay(250);
 				//system("irsend SEND_ONCE HEATER MODE");
 				//delay(250);

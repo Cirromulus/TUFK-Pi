@@ -40,6 +40,8 @@ Actuator* globalBeeper = nullptr;
 Sensor* globalSmoke = nullptr;
 void ohNoez()
 {
+	//FIXME: This disables the Firealarm.
+	return;
 	if(globalSmoke != nullptr)
 	{
 		//dehysterese
@@ -48,8 +50,6 @@ void ohNoez()
 		{
 			return;
 		}
-		//FIXME: This disables the Firealarm.
-		return;
 	}
 	if(globalBeeper != nullptr)
 	{
@@ -128,13 +128,13 @@ int main (int argc, char *argv[])
 
 	SmokeDetector smokeDetector(SMOKEP);
 	globalSmoke = &smokeDetector;
-	if(smokeDetector.getValue())
+	if(false && smokeDetector.getValue())
 	{
 		beeper.actuate(true);
 		fprintf(stderr, "Oh NOEZ, es brennt!\n");
 		return EXIT_FAILURE;
 	}
-	smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
+	//smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
 	Sensor pir(PIRPIN);
 	movementSensor = &pir;
 	movementLed = &green;
