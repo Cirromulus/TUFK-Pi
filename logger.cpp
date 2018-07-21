@@ -1,4 +1,5 @@
 #include <wiringPi.h>
+#include <mcp23017.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,7 +48,7 @@ int main (int argc, char *argv[])
 	
 	if (argc < 2)
 	{
-		printf ("usage: %s (<outputfile> <delay in seconds>)\n",argv[0], DHTPIN);
+		printf ("usage: %s (<outputfile> <delay in seconds>)\n",argv[0], DHT22PIN);
 	}
 
 	if(argc >= 2)
@@ -77,15 +78,19 @@ int main (int argc, char *argv[])
 	{
 		exit(EXIT_FAILURE);
 	}
+	mcp23017Setup (EXPANDER_BASE_PIN, EXPANDER_ADDR) ;
 
-	Led white(11);
-	Led red(10);
+	Led white(WHITELED);
+	Led red(REDLED);
+	
+	white.actuate(true);
+	white.actuate(false);
 
 	fprintf(outputfile, "\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\"\n");
 	TempHumid th;
 	while (!done) 
 	{
-		int ret = read_dht22_dat(th, DHTPIN);
+		int ret = read_dht22_dat(th, DHT22PIN);
 		if(ret < 0)
 		{
 			continue;
