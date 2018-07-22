@@ -6,6 +6,8 @@
 #include "sensors.hpp"
 #include "config.hpp"
 
+#include "xml.hpp"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -16,6 +18,8 @@
 #include <signal.h>
 #include <functional>
 
+
+using namespace std;
 
 volatile sig_atomic_t done;
 
@@ -99,13 +103,19 @@ int main (int argc, char *argv[])
 	sigaction(SIGTERM, &action, NULL);
 	sigaction(SIGINT, &action, NULL);
 	
-	if (argc < 3)
+	if (argc < 2)
 	{
-		printf ("usage: %s temperature humidity\n", argv[0]);
+		printf ("usage: %s configfile\n", argv[0]);
 		return -EINVAL;
 	}
 
-	target = TempHumid(atof(argv[1]), atof(argv[2]));
+	if(!fileExists(argv[1]))
+	{
+		fprintf(stderr, "Generating new config file %s\n", argv[1]);
+		generateDefaultValues(argv[1]);
+	}
+
+	target = loadXmlConfig(argv[1]);
 	
 	fprintf(stderr, "Target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
 	
@@ -145,6 +155,12 @@ int main (int argc, char *argv[])
 	TempHumid curr, last;
 	while (!done) 
 	{
+		TempHumid newTarget = loadXmlConfig(argv[1]);
+		if(newTarget != target)
+		{
+			target = newTarget;
+			fprintf(stderr, "New target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
+		}
 		int ret = read_dht22_dat(curr, DHT22PIN);
 		if(ret < 0)
 		{
