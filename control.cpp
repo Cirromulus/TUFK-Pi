@@ -1,9 +1,9 @@
-//TODO: get long twowire cable for IR-Led
+#include <wiringPi.h>
+#include <mcp23017.h>
 
 #include "dht22.hpp"
 #include "actuators.hpp"
 #include "sensors.hpp"
-#include "tinyxml2/tinyxml2.h"
 #include "config.hpp"
 
 #include <stdio.h>
@@ -40,8 +40,6 @@ Actuator* globalBeeper = nullptr;
 Sensor* globalSmoke = nullptr;
 void ohNoez()
 {
-	//FIXME: This disables the Firealarm.
-	return;
 	if(globalSmoke != nullptr)
 	{
 		//dehysterese
@@ -80,7 +78,7 @@ void movementChanged()
 		}
 		else
 		{
-			fprintf(stderr, "Movement ended (probably)\n");
+			fprintf(stderr, "Movement ended (possibly)\n");
 		}
 		if(movementLed != nullptr)
 		{
@@ -115,26 +113,27 @@ int main (int argc, char *argv[])
 	{
 		exit(EXIT_FAILURE);
 	}
+	mcp23017Setup (EXPANDER_BASE_PIN, EXPANDER_ADDR) ;
 
-	NoResetActuator beeper(BEEPIN);
+	NoResetActuator beeper(ALARMPIN);
 	globalBeeper = &beeper;
-	Led white(WHTPIN);
-	Led red(REDPIN);
-	Led green(GRNPIN);
-	Relaisswitch vent(VNTPIN);
-	Heater heat(HETPIN, &red);
-	Relaisswitch fridge(FRGPIN);
-	Relaisswitch alarm(ALMPIN);
+	Led white(WHITELED);
+	Led red(REDLED);
+	Led green(GREENLED);
+	Relaisswitch vent(VENTILATORPIN);
+	Heater heat(HEATERPIN, &red);
+	Relaisswitch fridge(FRIDGEPIN);
+	Relaisswitch pa(PAAMPPIN);
 
-	SmokeDetector smokeDetector(SMOKEP);
+	SmokeDetector smokeDetector(GASSENS);
 	globalSmoke = &smokeDetector;
-	if(false && smokeDetector.getValue())
+	if(smokeDetector.getValue())
 	{
 		beeper.actuate(true);
 		fprintf(stderr, "Oh NOEZ, es brennt!\n");
 		return EXIT_FAILURE;
 	}
-	//smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
+	smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
 	Sensor pir(PIRPIN);
 	movementSensor = &pir;
 	movementLed = &green;
@@ -146,7 +145,7 @@ int main (int argc, char *argv[])
 	TempHumid curr, last;
 	while (!done) 
 	{
-		int ret = read_dht22_dat(curr, DHTPIN);
+		int ret = read_dht22_dat(curr, DHT22PIN);
 		if(ret < 0)
 		{
 			continue;
