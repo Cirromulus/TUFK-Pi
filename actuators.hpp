@@ -195,6 +195,7 @@ public:
 			fflush(stderr);
 			blinkDelay(10500);
 			fprintf(stderr, "Done\n");
+			justStartedUp = false;
 		}
 		if(status != active)
 		{

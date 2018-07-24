@@ -14,7 +14,7 @@ logger: logger.cpp dht22.o
 control: control.cpp dht22.o actuators.o tinyxml
 	g++ $(CFLAGS) -o controller -std=c++11 dht22.o actuators.o control.cpp -Ltinyxml2 -lwiringPi -ltinyxml2
 
-tester: test.cpp dht22.o actuators.0
+test: test.cpp dht22.o actuators.o
 	g++ $(CFLAGS) -o tester -std=c++11 dht22.o actuators.o test.cpp -lwiringPi
 
 tinyxml:

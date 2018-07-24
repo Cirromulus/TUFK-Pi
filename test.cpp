@@ -1,11 +1,12 @@
+#include <wiringPi.h>
+#include <mcp23017.h>
+
 #include "dht22.hpp"
 #include "actuators.hpp"
 #include "sensors.hpp"
-#include "tinyxml2/tinyxml2.h"
 #include "config.hpp"
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 #include <unistd.h>
 #include <string.h>
 #include <sys/time.h>
@@ -14,7 +15,7 @@
 #include <signal.h>
 #include <functional>
 
-volatile sig_atomic_t done;
+using namespace std;
 
 
 int main (int argc, char *argv[])
@@ -23,19 +24,49 @@ int main (int argc, char *argv[])
 	{
 		exit(EXIT_FAILURE);
 	}
+	mcp23017Setup (EXPANDER_BASE_PIN, EXPANDER_ADDR) ;
 
-	NoResetActuator beeper(BEEPIN);
-	Led white(WHTPIN);
-	Led red(REDPIN);
-	Led green(GRNPIN);
-	Relaisswitch vent(VNTPIN);
-	Heater heat(HETPIN, &red);
-	Relaisswitch fridge(FRGPIN);
-	Relaisswitch alarm(ALMPIN);
+	NoResetActuator beeper(ALARMPIN);
+	Led white(WHITELED);
+	Led red(REDLED);
+	Led green(GREENLED);
+	Relaisswitch vent(VENTILATORPIN);
+	Heater heat(HEATERPIN, &red);
+	Relaisswitch fridge(FRIDGEPIN);
+	Relaisswitch pa(PAAMPPIN);
 
-	SmokeDetector smokeDetector(SMOKEP);
+	SmokeDetector smokeDetector(GASSENS);
 	Sensor pir(PIRPIN);
-	movementSensor = &pir;
-	movementLed = &green;
+	TempHumid curr;
+	int tempValid;
+
+	while(true)
+	{
+		tempValid = read_dht22_dat(curr, DHT22PIN);
+		cout << "PIR " << pir.getValue() << " GASSENS " << smokeDetector.getValue() << " TEMPHUMID " << (tempValid == 0 ? curr.temp : -1) << "°C " << (tempValid == 0 ? curr.humid : -1) << "rHel" << endl;
+		heat.actuate(true);
+		cout << "HEATER " << HEATERPIN << endl;
+		getchar();
+		tempValid = read_dht22_dat(curr, DHT22PIN);
+		cout << "PIR " << pir.getValue() << " GASSENS " << smokeDetector.getValue() << " TEMPHUMID " << (tempValid == 0 ? curr.temp : -1) << "°C " << (tempValid == 0 ? curr.humid : -1) << "rHel" << endl;
+		heat.actuate(false);
+		vent.actuate(true);
+		cout << "VENTILATOR " << VENTILATORPIN << endl;
+		getchar();
+		tempValid = read_dht22_dat(curr, DHT22PIN);
+		cout << "PIR " << pir.getValue() << " GASSENS " << smokeDetector.getValue() << " TEMPHUMID " << (tempValid == 0 ? curr.temp : -1) << "°C " << (tempValid == 0 ? curr.humid : -1) << "rHel" << endl;
+		vent.actuate(false);
+		fridge.actuate(true);
+		cout << "FRIDGE " << FRIDGEPIN << endl;
+		getchar();
+		tempValid = read_dht22_dat(curr, DHT22PIN);
+		cout << "PIR " << pir.getValue() << " GASSENS " << smokeDetector.getValue() << " TEMPHUMID " << (tempValid == 0 ? curr.temp : -1) << "°C " << (tempValid == 0 ? curr.humid : -1) << "rHel" << endl;
+		fridge.actuate(false);
+		pa.actuate(true);
+		cout << "PAAMP " << PAAMPPIN << endl;
+		getchar();
+		pa.actuate(false);
+	}
+	
 	return 0 ;
 }
