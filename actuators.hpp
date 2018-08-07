@@ -143,15 +143,19 @@ public:
 	inline
 	Heater(int pin) : Relaisswitch(pin)
 	{
-		Relaisswitch::actuate(true);
-		active = false;
-		justStartedUp = true;
+		init();
 	}
 	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
 	{
+		init();
+	}
+	inline void
+	init()
+	{
 		Relaisswitch::actuate(true);
 		active = false;
+		justStartedUp = true;
 	}
 	inline void
 	blinkDelay(unsigned millis)
