@@ -22,9 +22,9 @@ tinyxml:
 
 install:
 	cp controller ..
-	sudo cp etc/*.lirc.conf /etc/lirc/lircd.conf.d
-	sudo systemctl reload lircd.service
-	sudo cp etc/controller.service /etc/systemctl/system
+	sudo cp etc/*.conf /etc/lirc/lircd.conf.d
+	sudo systemctl restart lircd.service
+	sudo cp etc/controller.service /etc/systemd/system/
 	sudo systemctl daemon-reload
 	sudo systemctl enable controller.service
 	sudo systemctl start controller.service
