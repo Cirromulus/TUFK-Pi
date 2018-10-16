@@ -185,7 +185,8 @@ public:
 			actuate(false);
 			fprintf(stderr, "Waiting for Heater to cool down... ");
 			fflush(stderr);
-			blinkDelay(31000);
+			//blinkDelay(31000);
+			blinkDelay(5000);
 			fprintf(stderr, "Done\n");
 		}
 	}
