@@ -1,4 +1,7 @@
 *.o
 *.csv
 controller
+tester
 logger
+.deps/
+
