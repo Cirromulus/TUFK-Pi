@@ -1,0 +1,9 @@
+[Unit]
+Description=Temperature controller
+
+[Service]
+Type=simple
+ExecStart=/home/pi/controller /home/pi/tempconfig.xml
+
+[Install]
+WantedBy=multi-user.target
