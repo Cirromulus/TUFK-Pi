@@ -44,10 +44,17 @@ Actuator* globalBeeper = nullptr;
 Sensor* globalSmoke = nullptr;
 void ohNoez()
 {
+	//FIXME This deactivates the Smokedetector.
+	return;
 	if(globalSmoke != nullptr)
 	{
 		//dehysterese
 		printf("Smoke: %s\n", globalSmoke->getValue() ? "yes" : "no");
+		if(!globalSmoke->getValue())
+		{
+			return;
+		}
+		delay(1000);
 		if(!globalSmoke->getValue())
 		{
 			return;
@@ -153,13 +160,13 @@ int main (int argc, char *argv[])
 	Tempcontrol tempcontrol(&heat, &vent);
 	printCsvHeader();
 	TempHumid curr, last;
-	while (!done) 
+	while (!done)
 	{
 		TempHumid newTarget = loadXmlConfig(argv[1]);
 		if(newTarget != target)
 		{
 			target = newTarget;
-			fprintf(stderr, "New target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
+			fprintf(stderr, "New target: %0.2f C, %0.2f%%\n", target.temp, target.humid);
 		}
 		int ret = read_dht22_dat(curr, DHT22PIN);
 		if(ret < 0)
