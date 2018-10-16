@@ -185,8 +185,7 @@ public:
 			actuate(false);
 			fprintf(stderr, "Waiting for Heater to cool down... ");
 			fflush(stderr);
-			//blinkDelay(31000);
-			blinkDelay(5000);
+			//blinkDelay(31000);	//FIXME: This is only for debugging during summer
 			fprintf(stderr, "Done\n");
 		}
 	}
@@ -198,7 +197,7 @@ public:
 		{
 			fprintf(stderr, "Waiting for Heater to start up... ");
 			fflush(stderr);
-			blinkDelay(10500);
+			//blinkDelay(10500); //FIXME: This is just for debugging during summer
 			fprintf(stderr, "Done\n");
 			justStartedUp = false;
 		}
