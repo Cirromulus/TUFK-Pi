@@ -19,3 +19,12 @@ test: test.cpp dht22.o actuators.o
 
 tinyxml:
 	make -C tinyxml2 staticlib
+
+install:
+	cp controller ..
+	sudo cp etc/*.lirc.conf /etc/lirc/lircd.conf.d
+	sudo systemctl reload lircd.service
+	sudo cp etc/controller.service /etc/systemctl/system
+	sudo systemctl daemon-reload
+	sudo systemctl enable controller.service
+	sudo systemctl start controller.service
