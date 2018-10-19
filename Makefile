@@ -15,7 +15,7 @@ tinyxml2.o: tinyxml2/tinyxml2.cpp
 	make -C tinyxml2 staticlib
 
 control: control.cpp dht22.o actuators.o tinyxml2.o
-	g++ $(CFLAGS) -o controller dht22.o actuators.o control.cpp -Ltinyxml2 -lwiringPi -ltinyxml2
+	g++ $(CFLAGS) -o controller dht22.o actuators.o control.cpp -Ltinyxml2 -lwiringPi -ltinyxml2 -lcurlpp -lcurl
 
 test: test.cpp dht22.o actuators.o
 	g++ $(CFLAGS) -o tester dht22.o actuators.o test.cpp -lwiringPi

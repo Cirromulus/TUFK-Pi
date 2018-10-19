@@ -18,6 +18,10 @@
 #include <signal.h>
 #include <functional>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
 
 using namespace std;
 
@@ -26,6 +30,38 @@ volatile sig_atomic_t done;
 void printCsvHeader()
 {
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
+}
+
+void logToServer(const TempHumid& th, bool isHeaterOn, bool isVentOn)
+{
+	try {
+		curlpp::Cleanup cleaner;
+		curlpp::Easy request;
+
+		// Setting the URL to retrive. time, temp, humid, actuators
+		string baseUrl("http://wiewarmistesbei.exsilencio.de/upload.php?");
+		baseUrl += "time=";
+		baseUrl += to_string((unsigned)time(NULL));
+		baseUrl += "&temp=";
+		baseUrl += to_string(th.temp);
+		baseUrl += "&humid=";
+		baseUrl += to_string(th.humid);
+		baseUrl += "&actuators=";
+		baseUrl += to_string( (isHeaterOn << 1) | isVentOn);
+
+		request.setOpt(new curlpp::options::Url(baseUrl));
+		request.setOpt(new curlpp::options::Header(1));
+
+		std::cout << request << std::endl;
+
+		request.perform();
+	}
+	catch ( curlpp::LogicError & e ) {
+		std::cout << e.what() << std::endl;
+	}
+	catch ( curlpp::RuntimeError & e ) {
+		std::cout << e.what() << std::endl;
+	}
 }
 
 void logCsv(const TempHumid& th, bool isHeaterOn, bool isVentOn)
@@ -102,14 +138,14 @@ int main (int argc, char *argv[])
 {
 	int msdelay = 2000;
 	TempHumid target;
-	
+
 	done = false;
 	struct sigaction action;
 	memset(&action, 0, sizeof(struct sigaction));
 	action.sa_handler = term;
 	sigaction(SIGTERM, &action, NULL);
 	sigaction(SIGINT, &action, NULL);
-	
+
 	if (argc < 2)
 	{
 		printf ("usage: %s configfile\n", argv[0]);
@@ -123,9 +159,9 @@ int main (int argc, char *argv[])
 	}
 
 	target = loadXmlConfig(argv[1]);
-	
+
 	fprintf(stderr, "Target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
-	
+
 	if (wiringPiSetup () == -1)
 	{
 		exit(EXIT_FAILURE);
@@ -160,6 +196,7 @@ int main (int argc, char *argv[])
 	Tempcontrol tempcontrol(&heat, &vent);
 	printCsvHeader();
 	TempHumid curr, last;
+	uint8_t rollover = 0;
 	while (!done)
 	{
 		TempHumid newTarget = loadXmlConfig(argv[1]);
@@ -176,6 +213,12 @@ int main (int argc, char *argv[])
 		if(curr != last)
 		{
 			logCsv(curr, heat.getStatus(), vent.getStatus());
+			rollover++;
+			if(rollover > 2)
+			{
+				logToServer(curr, heat.getStatus(), vent.getStatus());
+				rollover = 0;
+			}
 			tempcontrol.calcActions(curr, target);
 			last = curr;
 		}
