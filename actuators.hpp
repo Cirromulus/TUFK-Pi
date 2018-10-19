@@ -125,7 +125,7 @@ class Relaisswitch : public InvertedActuator
 public:
 	inline
 	Relaisswitch(int pin) : InvertedActuator(pin){};
-	
+
 	inline void
 	actuate(bool status) override
 	{
@@ -186,6 +186,7 @@ public:
 			fprintf(stderr, "Waiting for Heater to cool down... ");
 			fflush(stderr);
 			//blinkDelay(31000);	//FIXME: This is only for debugging during summer
+			blinkDelay(5000);
 			fprintf(stderr, "Done\n");
 		}
 	}
@@ -197,7 +198,7 @@ public:
 		{
 			fprintf(stderr, "Waiting for Heater to start up... ");
 			fflush(stderr);
-			//blinkDelay(10500); //FIXME: This is just for debugging during summer
+			blinkDelay(10500);
 			fprintf(stderr, "Done\n");
 			justStartedUp = false;
 		}
@@ -232,12 +233,12 @@ public:
 		}
 	}
 };
-	
+
 class Tempcontrol
 {
 	Actuator* heat;
 	Actuator* vent;
-	
+
 public:
 	inline
 	Tempcontrol(Actuator* heater, Actuator* ventilator) : heat(heater), vent(ventilator)

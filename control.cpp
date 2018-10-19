@@ -32,27 +32,25 @@ void printCsvHeader()
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
 }
 
-void logToServer(const TempHumid& th, bool isHeaterOn, bool isVentOn)
+void logToServer(string baseURL, const TempHumid& th, bool isHeaterOn, bool isVentOn)
 {
 	try {
 		curlpp::Cleanup cleaner;
 		curlpp::Easy request;
 
 		// Setting the URL to retrive. time, temp, humid, actuators
-		string baseUrl("http://wiewarmistesbei.exsilencio.de/upload.php?");
-		baseUrl += "time=";
-		baseUrl += to_string((unsigned)time(NULL));
-		baseUrl += "&temp=";
-		baseUrl += to_string(th.temp);
-		baseUrl += "&humid=";
-		baseUrl += to_string(th.humid);
-		baseUrl += "&actuators=";
-		baseUrl += to_string( (isHeaterOn << 1) | isVentOn);
+		string url(baseURL);
+		url += "?time=";
+		url += to_string((unsigned)time(NULL));
+		url += "&temp=";
+		url += to_string(th.temp);
+		url += "&humid=";
+		url += to_string(th.humid);
+		url += "&actuators=";
+		url += to_string(static_cast<uint32_t>(isHeaterOn << 1) | isVentOn);
 
-		request.setOpt(new curlpp::options::Url(baseUrl));
+		request.setOpt(new curlpp::options::Url(url));
 		request.setOpt(new curlpp::options::Header(1));
-
-		std::cout << request << std::endl;
 
 		request.perform();
 	}
@@ -136,7 +134,6 @@ void movementChanged()
 
 int main (int argc, char *argv[])
 {
-	int msdelay = 2000;
 	TempHumid target;
 
 	done = false;
@@ -146,19 +143,17 @@ int main (int argc, char *argv[])
 	sigaction(SIGTERM, &action, NULL);
 	sigaction(SIGINT, &action, NULL);
 
+
+
 	if (argc < 2)
 	{
-		printf ("usage: %s configfile\n", argv[0]);
+		printf ("usage: %s configfile\n\tconfigfile will be created if does not exist\n", argv[0]);
 		return -EINVAL;
 	}
 
-	if(!fileExists(argv[1]))
-	{
-		fprintf(stderr, "Generating new config file %s\n", argv[1]);
-		generateDefaultValues(argv[1]);
-	}
+	Config config(argv[1]);
 
-	target = loadXmlConfig(argv[1]);
+	target = config.getTempHumid();
 
 	fprintf(stderr, "Target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
 
@@ -196,10 +191,11 @@ int main (int argc, char *argv[])
 	Tempcontrol tempcontrol(&heat, &vent);
 	printCsvHeader();
 	TempHumid curr, last;
-	uint8_t rollover = 0;
+	unsigned long lastServerConnection = 0;
 	while (!done)
 	{
-		TempHumid newTarget = loadXmlConfig(argv[1]);
+		config.reloadFromFile();
+		TempHumid newTarget = config.getTempHumid();
 		if(newTarget != target)
 		{
 			target = newTarget;
@@ -213,11 +209,10 @@ int main (int argc, char *argv[])
 		if(curr != last)
 		{
 			logCsv(curr, heat.getStatus(), vent.getStatus());
-			rollover++;
-			if(rollover > 2)
+			if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
 			{
-				logToServer(curr, heat.getStatus(), vent.getStatus());
-				rollover = 0;
+				logToServer(config.getServerURI(), curr, heat.getStatus(), vent.getStatus());
+				lastServerConnection = time(NULL);
 			}
 			tempcontrol.calcActions(curr, target);
 			last = curr;
@@ -225,6 +220,7 @@ int main (int argc, char *argv[])
 
 		white.actuate(false);
 		unsigned delayed = 0;
+		unsigned msdelay = config.getSamplingPeriod() * 1000;
 		while(delayed < msdelay)
 		{
 			if(done)
