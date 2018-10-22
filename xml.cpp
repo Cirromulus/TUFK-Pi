@@ -35,7 +35,7 @@ void Config::generateDefaultValues(string name)
 	element->SetAttribute("targetHumidity", 65.);
 	element->SetAttribute("samplingPeriodSeconds", 5);
 	element->SetAttribute("serverConnectionPeriodSeconds", 60);
-	element->SetAttribute("serverURI", "http://wiewarmistesbei.exsilencio.de/upload.php");
+	element->SetAttribute("serverURI", "http://wiewarmistesbei.exsilencio.de/");
 	doc.LinkEndChild( element );
 	doc.SaveFile( name.c_str() );
 };

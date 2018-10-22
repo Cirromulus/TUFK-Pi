@@ -39,8 +39,8 @@ void logToServer(string baseURL, const TempHumid& th, bool isHeaterOn, bool isVe
 		curlpp::Easy request;
 
 		// Setting the URL to retrive. time, temp, humid, actuators
-		string url(baseURL);
-		url += "?time=";
+		string url(baseURL + "upload.php?");
+		url += "time=";
 		url += to_string((unsigned)time(NULL));
 		url += "&temp=";
 		url += to_string(th.temp);
