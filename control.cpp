@@ -21,7 +21,7 @@
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
-
+#include <sstream>
 
 using namespace std;
 
@@ -32,14 +32,14 @@ void printCsvHeader()
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
 }
 
-void logToServer(string baseURL, const TempHumid& th, bool isHeaterOn, bool isVentOn)
+void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool isVentOn)
 {
 	try {
 		curlpp::Cleanup cleaner;
 		curlpp::Easy request;
 
 		// Setting the URL to retrive. time, temp, humid, actuators
-		string url(baseURL + "upload.php?");
+		string url(serverURI + "upload.php?");
 		url += "time=";
 		url += to_string((unsigned)time(NULL));
 		url += "&temp=";
@@ -50,8 +50,6 @@ void logToServer(string baseURL, const TempHumid& th, bool isHeaterOn, bool isVe
 		url += to_string(static_cast<uint32_t>(isHeaterOn << 1) | isVentOn);
 
 		request.setOpt(new curlpp::options::Url(url));
-		request.setOpt(new curlpp::options::Header(1));
-
 		request.perform();
 	}
 	catch ( curlpp::LogicError & e ) {
@@ -60,6 +58,31 @@ void logToServer(string baseURL, const TempHumid& th, bool isHeaterOn, bool isVe
 	catch ( curlpp::RuntimeError & e ) {
 		std::cout << e.what() << std::endl;
 	}
+}
+
+bool getConfigFromServer(string serverURI, Config& config)
+{
+	try {
+		curlpp::Cleanup cleaner;
+		curlpp::Easy request;
+
+		// Setting the URL to retrive. time, temp, humid, actuators
+		string url(serverURI + "config.php");
+
+		request.setOpt(new curlpp::options::Url(url));
+		request.setOpt(new curlpp::options::Header(0));
+
+		std::ostringstream os;
+		os << request;
+		return config.reloadFromString(os.str());
+	}
+	catch ( curlpp::LogicError & e ) {
+		std::cout << e.what() << std::endl;
+	}
+	catch ( curlpp::RuntimeError & e ) {
+		std::cout << e.what() << std::endl;
+	}
+	return false;
 }
 
 void logCsv(const TempHumid& th, bool isHeaterOn, bool isVentOn)
@@ -147,7 +170,7 @@ int main (int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		printf ("usage: %s configfile\n\tconfigfile will be created if does not exist\n", argv[0]);
+		printf ("usage: %s configfile\n\tconfigfile will be created if it does not exist\n", argv[0]);
 		return -EINVAL;
 	}
 
@@ -194,7 +217,6 @@ int main (int argc, char *argv[])
 	unsigned long lastServerConnection = 0;
 	while (!done)
 	{
-		config.reloadFromFile();
 		TempHumid newTarget = config.getTempHumid();
 		if(newTarget != target)
 		{
@@ -212,6 +234,11 @@ int main (int argc, char *argv[])
 			if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
 			{
 				logToServer(config.getServerURI(), curr, heat.getStatus(), vent.getStatus());
+				if(!getConfigFromServer(config.getServerURI(), config))
+				{
+					cerr << "Invalid config from server, loading local file" << endl;
+					config.reloadFromFile();
+				}
 				lastServerConnection = time(NULL);
 			}
 			tempcontrol.calcActions(curr, target);

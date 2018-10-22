@@ -11,7 +11,7 @@ actuators.o: actuators.cpp
 tinyxml2/tinyxml2.o: tinyxml2/tinyxml2.cpp
 	make -C tinyxml2 staticlib
 
-xml.o: tinyxml2/tinyxml2.o
+xml.o: xml.cpp tinyxml2/tinyxml2.o
 	g++ $(CFLAGS) -c xml.cpp
 
 logger: logger.cpp dht22.o

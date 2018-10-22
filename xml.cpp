@@ -63,6 +63,31 @@ bool Config::reloadFromFile()
 	return true;
 }
 
+bool Config::reloadFromString(std::string xml)
+{
+	tinyxml2::XMLDocument doc;
+	if(doc.Parse(xml.c_str(), xml.length()) != XML_SUCCESS)
+	{
+		cerr << "Could not read config " << xml << " " << doc.ErrorName() << endl;
+		return false;
+	}
+	const XMLElement* elem = doc.FirstChildElement("Config");
+	if(elem == nullptr)
+		return false;
+	if(elem->FindAttribute("targetTemperature") == nullptr)
+		return false;
+	if(elem->FindAttribute("targetHumidity") == nullptr)
+		return false;
+	if(elem->FindAttribute("samplingPeriodSeconds") == nullptr)
+		return false;
+	if(elem->FindAttribute("serverConnectionPeriodSeconds") == nullptr)
+		return false;
+	if(elem->FindAttribute("serverURI") == nullptr)
+		return false;
+	config.Parse(xml.c_str(), xml.length());
+	return true;
+}
+
 TempHumid Config::getTempHumid()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");

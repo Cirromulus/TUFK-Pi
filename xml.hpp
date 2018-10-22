@@ -14,6 +14,7 @@ public:
 	static bool fileExists(std::string name);
 	static void generateDefaultValues(std::string name);
 	bool reloadFromFile();
+	bool reloadFromString(std::string xml);
 	TempHumid getTempHumid();
 	uint32_t getSamplingPeriod();
 	uint32_t getServerConnectPeriod();
