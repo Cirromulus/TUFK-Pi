@@ -4,7 +4,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 {
 	bool heaterTarget = heat->getStatus();
 	bool ventilTarget = false;
-	bool tooMoist = ist.humid > soll.humid + 5;
+	bool tooMoist = ist.humid > soll.humid;
 	
 	if(!heat->getStatus() && ist.temp < soll.temp - 1)
 	{

@@ -51,7 +51,7 @@ void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool is
 		url += "&humid=";
 		url += to_string(th.humid);
 		url += "&actuators=";
-		url += to_string(static_cast<uint32_t>(isHeaterOn << 1) | isVentOn);
+		url += to_string(statusBits);
 
 		request.setOpt(new curlpp::options::Url(url));
 		request.perform();
