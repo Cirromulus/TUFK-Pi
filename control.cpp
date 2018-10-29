@@ -26,6 +26,8 @@
 using namespace std;
 
 volatile sig_atomic_t done;
+bool wasMovementSinceLastUpdate;
+bool wasFireSinceLastUpdate;
 
 void printCsvHeader()
 {
@@ -34,6 +36,8 @@ void printCsvHeader()
 
 void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool isVentOn)
 {
+	uint32_t statusBits = wasFireSinceLastUpdate << 3 | wasMovementSinceLastUpdate << 2 | isHeaterOn << 1 | isVentOn;
+	
 	try {
 		curlpp::Cleanup cleaner;
 		curlpp::Easy request;
@@ -51,6 +55,8 @@ void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool is
 
 		request.setOpt(new curlpp::options::Url(url));
 		request.perform();
+		wasMovementSinceLastUpdate = false;
+		wasFireSinceLastUpdate = false;
 	}
 	catch ( curlpp::LogicError & e ) {
 		std::cout << e.what() << std::endl;
@@ -94,6 +100,11 @@ void logCsv(const TempHumid& th, bool isHeaterOn, bool isVentOn)
 void term(int signum)
 {
 	fprintf(stderr, "Received signal %d\n", signum);
+	if(done)
+	{
+		fprintf(stderr, "Received signal %d AGAIN!!!!!!\n", signum);
+		exit(-1);
+	}
 	done = true;
 }
 
@@ -101,8 +112,6 @@ Actuator* globalBeeper = nullptr;
 Sensor* globalSmoke = nullptr;
 void ohNoez()
 {
-	//FIXME This deactivates the Smokedetector.
-	return;
 	if(globalSmoke != nullptr)
 	{
 		//dehysterese
@@ -117,6 +126,10 @@ void ohNoez()
 			return;
 		}
 	}
+	//FIXME This deactivates the Smokedetector.
+	wasFireSinceLastUpdate = true;
+	return;
+	
 	if(globalBeeper != nullptr)
 	{
 		globalBeeper->actuate(true);
@@ -143,6 +156,7 @@ void movementChanged()
 		if(val)
 		{
 			fprintf(stderr, "Movement detected\n");
+			wasMovementSinceLastUpdate = true;
 		}
 		else
 		{
@@ -160,6 +174,9 @@ int main (int argc, char *argv[])
 	TempHumid target;
 
 	done = false;
+	wasMovementSinceLastUpdate = false;
+	wasFireSinceLastUpdate = false;
+	
 	struct sigaction action;
 	memset(&action, 0, sizeof(struct sigaction));
 	action.sa_handler = term;
