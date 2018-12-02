@@ -30,7 +30,7 @@ init:
 	sudo systemctl daemon-reload
 	sudo systemctl enable controller.service
 
-install:
+install: control
 	sudo systemctl stop controller.service || true
 	cp controller ..
 	sudo systemctl start controller.service
