@@ -68,6 +68,7 @@ void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool is
 
 bool getConfigFromServer(string serverURI, Config& config)
 {
+	std::ostringstream os;
 	try {
 		curlpp::Cleanup cleaner;
 		curlpp::Easy request;
@@ -78,15 +79,16 @@ bool getConfigFromServer(string serverURI, Config& config)
 		request.setOpt(new curlpp::options::Url(url));
 		request.setOpt(new curlpp::options::Header(0));
 
-		std::ostringstream os;
 		os << request;
 		return config.reloadFromString(os.str());
 	}
 	catch ( curlpp::LogicError & e ) {
 		std::cout << e.what() << std::endl;
+		cout << os;
 	}
 	catch ( curlpp::RuntimeError & e ) {
 		std::cout << e.what() << std::endl;
+		cout << os;
 	}
 	return false;
 }
