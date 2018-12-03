@@ -28,15 +28,20 @@ using namespace std;
 volatile sig_atomic_t done;
 bool wasMovementSinceLastUpdate;
 bool wasFireSinceLastUpdate;
+bool wasHeaterOn;
+bool wasVentOn;
 
 void printCsvHeader()
 {
 	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
 }
 
-void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool isVentOn)
+void logToServer(string serverURI, const TempHumid& th)
 {
-	uint32_t statusBits = wasFireSinceLastUpdate << 3 | wasMovementSinceLastUpdate << 2 | isHeaterOn << 1 | isVentOn;
+	uint32_t statusBits = wasFireSinceLastUpdate << 3 |
+		wasMovementSinceLastUpdate << 2 |
+		wasHeaterOn << 1 |
+		wasVentOn;
 	
 	try {
 		curlpp::Cleanup cleaner;
@@ -57,6 +62,8 @@ void logToServer(string serverURI, const TempHumid& th, bool isHeaterOn, bool is
 		request.perform();
 		wasMovementSinceLastUpdate = false;
 		wasFireSinceLastUpdate = false;
+		wasHeaterOn = false;
+		wasVentOn = false;
 	}
 	catch ( curlpp::LogicError & e ) {
 		std::cout << e.what() << std::endl;
@@ -249,10 +256,12 @@ int main (int argc, char *argv[])
 		}
 		if(curr != last)
 		{
-			logCsv(curr, heat.getStatus(), vent.getStatus());
+			tempcontrol.calcActions(curr, target);
+			wasHeaterOn |= heat.getStatus();
+			wasVentOn |= vent.getStatus();
 			if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
 			{
-				logToServer(config.getServerURI(), curr, heat.getStatus(), vent.getStatus());
+				logToServer(config.getServerURI(), curr);
 				if(!getConfigFromServer(config.getServerURI(), config))
 				{
 					cerr << "Invalid config from server, loading local file" << endl;
@@ -260,7 +269,7 @@ int main (int argc, char *argv[])
 				}
 				lastServerConnection = time(NULL);
 			}
-			tempcontrol.calcActions(curr, target);
+			logCsv(curr, heat.getStatus(), vent.getStatus());
 			last = curr;
 		}
 
