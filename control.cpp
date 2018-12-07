@@ -164,12 +164,12 @@ void movementChanged()
 		int val = movementSensor->getValue();
 		if(val)
 		{
-			fprintf(stderr, "Movement detected\n");
+			//fprintf(stderr, "Movement detected\n");
 			wasMovementSinceLastUpdate = true;
 		}
 		else
 		{
-			fprintf(stderr, "Movement ended (possibly)\n");
+			//fprintf(stderr, "Movement ended (possibly)\n");
 		}
 		if(movementLed != nullptr)
 		{
