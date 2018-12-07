@@ -185,7 +185,9 @@ int main (int argc, char *argv[])
 	done = false;
 	wasMovementSinceLastUpdate = false;
 	wasFireSinceLastUpdate = false;
-	
+	wasHeaterOn = false;
+	wasVentOn = false;
+
 	struct sigaction action;
 	memset(&action, 0, sizeof(struct sigaction));
 	action.sa_handler = term;
