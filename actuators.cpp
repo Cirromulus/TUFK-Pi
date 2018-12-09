@@ -33,7 +33,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		ventilTarget = true;
 	}
 	
-	if(ist.temp > soll.temp + 3 && ist.temp < 20)	//magic Temperature at which heater just ventilates
+	if(heaterTarget && ist.temp > soll.temp + 3 && ist.temp < 20)	//magic Temperature at which heater just ventilates
 	{
 		fprintf(stderr, "Too Hot (+3), ignoring moisture, suggesting heater OFF\n");
 		heaterTarget = false;
