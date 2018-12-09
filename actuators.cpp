@@ -29,7 +29,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 	
 	if(tooMoist && ist.temp > soll.temp + 2)
 	{
-		fprintf(stderr, "Too hot (+2) suggesting Vent ON\n");
+		fprintf(stderr, "Too Moist and too hot (+2) suggesting Vent ON\n");
 		ventilTarget = true;
 	}
 	
