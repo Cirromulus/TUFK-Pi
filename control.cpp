@@ -256,24 +256,27 @@ int main (int argc, char *argv[])
 		{
 			continue;
 		}
-		if(curr != last)
+		if(curr.temp < -10)
 		{
-			tempcontrol.calcActions(curr, target);
-			wasHeaterOn |= heat.getStatus();
-			wasVentOn |= vent.getStatus();
-			if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
-			{
-				logToServer(config.getServerURI(), curr);
-				if(!getConfigFromServer(config.getServerURI(), config))
-				{
-					cerr << "Invalid config from server, loading local file" << endl;
-					config.reloadFromFile();
-				}
-				lastServerConnection = time(NULL);
-			}
-			logCsv(curr, heat.getStatus(), vent.getStatus());
-			last = curr;
+			//Hopefully we never reach this
+			continue;
 		}
+		
+		tempcontrol.calcActions(curr, target);
+		wasHeaterOn |= heat.getStatus();
+		wasVentOn |= vent.getStatus();
+		if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
+		{
+			logToServer(config.getServerURI(), curr);
+			if(!getConfigFromServer(config.getServerURI(), config))
+			{
+				cerr << "Invalid config from server, loading local file" << endl;
+				config.reloadFromFile();
+			}
+			lastServerConnection = time(NULL);
+		}
+		logCsv(curr, heat.getStatus(), vent.getStatus());
+		last = curr;
 
 		white.actuate(false);
 		unsigned delayed = 0;
