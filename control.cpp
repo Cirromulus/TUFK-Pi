@@ -259,6 +259,7 @@ int main (int argc, char *argv[])
 		if(curr.temp < -10)
 		{
 			//Hopefully we never reach this
+			//Unterdrücke fehlerhafte samples
 			continue;
 		}
 		
