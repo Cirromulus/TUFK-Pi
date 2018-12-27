@@ -1,0 +1,7 @@
+[Unit]
+Description=Restart temperature controller
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl try-restart controller.service
+
