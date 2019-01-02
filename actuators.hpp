@@ -5,6 +5,7 @@
 #include <wiringPi.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 class Actuator
 {
@@ -138,25 +139,30 @@ class Heater : public Relaisswitch
 {
 	bool heating = false;
 	Led* statusLed = nullptr;
-	bool justStartedUp = true;
+	time_t started;
+	bool bootupElapsed = false;
+	static constexpr uint32_t magicStartupTime = 11; //actually 10, but safety first...
 public:
-	inline
+	
 	Heater(int pin) : Relaisswitch(pin)
 	{
 		init();
 	}
+	
 	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
 	{
 		init();
 	}
+	
 	inline void
 	init()
 	{
 		Relaisswitch::actuate(true);
 		active = false;
-		justStartedUp = true;
+		started = time(NULL);
 	}
+	
 	inline void
 	blinkDelay(unsigned millis)
 	{
@@ -177,6 +183,7 @@ public:
 			}
 		}
 	}
+	
 	inline
 	~Heater()
 	{
@@ -185,52 +192,13 @@ public:
 			actuate(false);
 			fprintf(stderr, "Waiting for Heater to cool down... ");
 			fflush(stderr);
-			blinkDelay(31000);	//FIXME: This is only for debugging during summer
+			blinkDelay(31000);
 			fprintf(stderr, "Done\n");
 		}
 	}
-	inline void
-	actuate(bool status) override
-	{
-		fprintf(stderr, "Toggled heater %s\n", status ? "ON" : "OFF");
-		if(status && justStartedUp)
-		{
-			fprintf(stderr, "Waiting for Heater to start up... ");
-			fflush(stderr);
-			blinkDelay(11000);
-			fprintf(stderr, "Done\n");
-			justStartedUp = false;
-		}
-		if(status != active)
-		{
-			system("irsend SEND_START HEATER ONOFF");
-			delay(250);
-			system("irsend SEND_STOP HEATER ONOFF");
-			if(status)
-			{
-				system("irsend SEND_START HEATER UP");
-				delay(150);
-				system("irsend SEND_STOP HEATER UP");
-				delay(250);
-				system("irsend SEND_START HEATER DOWN");
-				delay(150);
-				system("irsend SEND_STOP HEATER DOWN");
-				delay(250);
-				system("irsend SEND_START HEATER SWING");
-				delay(150);
-				system("irsend SEND_STOP HEATER SWING");
-				delay(250);
-				system("irsend SEND_ONCE HEATER MODE");
-				delay(250);
-				system("irsend SEND_ONCE HEATER MODE");
-			}
-			active = status;
-			if(statusLed != nullptr)
-			{
-				statusLed->actuate(status);
-			}
-		}
-	}
+	
+	void
+	actuate(bool newState) override;
 };
 
 class Tempcontrol

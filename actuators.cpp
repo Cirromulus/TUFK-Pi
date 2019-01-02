@@ -1,5 +1,7 @@
 #include "actuators.hpp"
 
+
+
 void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 {
 	bool heaterTarget = heat->getStatus();
@@ -48,3 +50,55 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		vent->actuate(ventilTarget);
 	}
 }
+
+void
+Heater::actuate(bool newState)
+{
+	fprintf(stderr, "Toggle heater %s\n", newState ? "ON" : "OFF");
+	if(newState && !bootupElapsed)
+	{
+		time_t now = time(NULL);
+		if(now < started + magicStartupTime)
+		{
+			fprintf(stderr, "Waiting %u seconds for Heater to start up... ", (unsigned)((started + magicStartupTime) - now);
+			fflush(stderr);
+			blinkDelay((started + magicStartupTime) - now);
+			fprintf(stderr, "Done\n");
+		}
+		bootupElapsed = true;
+	}
+	if(newState != active)
+	{
+		system("irsend SEND_START HEATER ONOFF");
+		delay(150);
+		system("irsend SEND_STOP HEATER ONOFF");
+		if(newState)
+		{
+			delay(250);
+			system("irsend SEND_START HEATER UP");
+			delay(150);
+			system("irsend SEND_STOP HEATER UP");
+			delay(250);
+			system("irsend SEND_START HEATER DOWN");
+			delay(150);
+			system("irsend SEND_STOP HEATER DOWN");
+			delay(250);
+			system("irsend SEND_START HEATER SWING");
+			delay(150);
+			system("irsend SEND_STOP HEATER SWING");
+			
+			// this may disable the heating again... dunno 
+			// TODO: Test this
+			//delay(250);
+			//system("irsend SEND_ONCE HEATER MODE");
+			//delay(250);
+			//system("irsend SEND_ONCE HEATER MODE");
+		}
+		active = newState;
+		if(newStateLed != nullptr)
+		{
+			newStateLed->actuate(newState);
+		}
+	}
+}
+};
