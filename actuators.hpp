@@ -193,7 +193,7 @@ public:
 		if(active)
 		{
 			actuate(false);
-			fprintf(stderr, "Waiting for Heater to cool down... ");
+			fprintf(stderr, "Waiting %u seconds for Heater to cool down... ", (unsigned) magicCooloffTime);
 			fflush(stderr);
 			blinkDelay(magicCooloffTime * 1000);
 			fprintf(stderr, "Done\n");

@@ -17,9 +17,28 @@
 
 using namespace std;
 
+bool done = false;
+
+void term(int signum)
+{
+	fprintf(stderr, "Received signal %d\n", signum);
+	fprintf(stderr, "\nCycle through loop to terminate normally, plz!\n\n");
+	if(done)
+	{
+		fprintf(stderr, "Received signal %d AGAIN!!!!!!\n", signum);
+		exit(-1);
+	}
+	done = true;
+}
 
 int main (int argc, char *argv[])
 {
+	struct sigaction action;
+	memset(&action, 0, sizeof(struct sigaction));
+	action.sa_handler = term;
+	sigaction(SIGINT, &action, NULL);
+	
+	
 	if (wiringPiSetup () == -1)
 	{
 		exit(EXIT_FAILURE);
@@ -40,7 +59,7 @@ int main (int argc, char *argv[])
 	TempHumid curr;
 	int tempValid;
 
-	while(true)
+	while(!done)
 	{
 		tempValid = read_dht22_dat(curr, DHT22PIN);
 		cout << "PIR " << pir.getValue() << " GASSENS " << smokeDetector.getValue() << " TEMPHUMID " << (tempValid == 0 ? curr.temp : -1) << "°C " << (tempValid == 0 ? curr.humid : -1) << "rHel" << endl;
