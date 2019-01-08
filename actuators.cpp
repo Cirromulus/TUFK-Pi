@@ -1,7 +1,6 @@
 #include "actuators.hpp"
 
 
-
 void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 {
 	bool heaterTarget = heat->getStatus();
@@ -60,9 +59,9 @@ Heater::actuate(bool newState)
 		time_t now = time(NULL);
 		if(now < started + magicStartupTime)
 		{
-			fprintf(stderr, "Waiting %u seconds for Heater to start up... ", (unsigned)((started + magicStartupTime) - now);
+			fprintf(stderr, "Waiting %u seconds for Heater to start up... ", (unsigned)((started + magicStartupTime) - now));
 			fflush(stderr);
-			blinkDelay((started + magicStartupTime) - now);
+			blinkDelay(1000 * (started + magicStartupTime) - now);
 			fprintf(stderr, "Done\n");
 		}
 		bootupElapsed = true;
@@ -95,10 +94,9 @@ Heater::actuate(bool newState)
 			//system("irsend SEND_ONCE HEATER MODE");
 		}
 		active = newState;
-		if(newStateLed != nullptr)
+		if(statusLed != nullptr)
 		{
-			newStateLed->actuate(newState);
+			statusLed->actuate(newState);
 		}
 	}
 }
-};

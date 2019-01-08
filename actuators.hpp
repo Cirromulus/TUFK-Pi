@@ -4,8 +4,10 @@
 
 #include <wiringPi.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <sys/time.h>
+#include <time.h>
 
 class Actuator
 {
@@ -141,7 +143,8 @@ class Heater : public Relaisswitch
 	Led* statusLed = nullptr;
 	time_t started;
 	bool bootupElapsed = false;
-	static constexpr uint32_t magicStartupTime = 11; //actually 10, but safety first...
+	static constexpr uint32_t magicStartupTime = 5; //actually 10, but safety first...
+	static constexpr uint32_t magicCooloffTime = 31; //actually 10, but safety first...
 public:
 	
 	Heater(int pin) : Relaisswitch(pin)
@@ -192,7 +195,7 @@ public:
 			actuate(false);
 			fprintf(stderr, "Waiting for Heater to cool down... ");
 			fflush(stderr);
-			blinkDelay(31000);
+			blinkDelay(magicCooloffTime * 1000);
 			fprintf(stderr, "Done\n");
 		}
 	}
