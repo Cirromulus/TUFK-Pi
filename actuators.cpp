@@ -61,7 +61,7 @@ Heater::actuate(bool newState)
 		{
 			fprintf(stderr, "Waiting %u seconds for Heater to start up... ", (unsigned)((started + magicStartupTime) - now));
 			fflush(stderr);
-			blinkDelay(1000 * (started + magicStartupTime) - now);
+			blinkDelay(1000 * ((started + magicStartupTime) - now));
 			fprintf(stderr, "Done\n");
 		}
 		bootupElapsed = true;
