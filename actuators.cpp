@@ -71,9 +71,10 @@ Heater::actuate(bool newState)
 		system("irsend SEND_START HEATER ONOFF");
 		delay(150);
 		system("irsend SEND_STOP HEATER ONOFF");
+		delay(200);
 		if(newState)
 		{
-			delay(250);	//This activates the actual Heating
+			delay(50);	//This activates the actual Heating
 			system("irsend SEND_START HEATER UP");
 			delay(150);
 			system("irsend SEND_STOP HEATER UP");
