@@ -34,6 +34,6 @@ init:
 	sudo systemctl enable controller.service
 
 install: control
-	sudo systemctl stop controller.service || true
+	-sudo systemctl stop controller.service
 	cp controller ..
 	sudo systemctl start controller.service
