@@ -195,7 +195,6 @@ int main (int argc, char *argv[])
 	sigaction(SIGINT, &action, NULL);
 
 
-
 	if (argc < 2)
 	{
 		printf ("usage: %s configfile\n\tconfigfile will be created if it does not exist\n", argv[0]);
@@ -203,7 +202,14 @@ int main (int argc, char *argv[])
 	}
 
 	Config config(argv[1]);
-
+	if(!getConfigFromServer(config.getServerURI(), config))
+	{
+		cerr << "Invalid config from server, loading local file" << endl;
+		config.reloadFromFile();
+	}
+	lastServerConnection = time(NULL);
+	
+	
 	target = config.getTempHumid();
 
 	fprintf(stderr, "Target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
