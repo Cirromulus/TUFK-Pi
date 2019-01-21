@@ -3,25 +3,46 @@
 
 void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 {
-	bool heaterTarget = heat->getStatus();
+	bool heaterTarget = false;
 	bool ventilTarget = false;
-	bool tooMoist = ist.humid > soll.humid;
+	bool tooMoist = false;
 	
-	if(!heat->getStatus() && ist.temp < soll.temp - 1)
+	if(!debounceTooHot && ist.temp < soll.temp - 1)
 	{
-		fprintf(stderr, "Too cold, suggesting heater ON\n");
+		fprintf(stderr, "Too cold (-1), suggesting heater ON\n");
 		heaterTarget = true;
+		debounceTooHot = true;
 	}
-	else if(heat->getStatus() && ist.temp > soll.temp + 1)
+	else if(debounceTooHot && ist.temp > soll.temp + 1)
 	{
 		fprintf(stderr, "Too hot (+1), suggesting Heater OFF\n");
 		heaterTarget = false;
+		debounceTooHot = false;
 	}
-	else if(heaterTarget)
+	else if(debounceTooHot)
 	{
 		fprintf(stderr, "Debounce, keeping Heater ON\n");
 	}
 	
+	if(!debounceTooMoist && ist.humid > (soll.humid + 5))
+	{
+		fprintf(stderr, "Too humid (+5)\n");
+		tooMoist = true;
+		debounceTooMoist = true;
+	}
+	else if(debounceTooMoist && ist.humid < (soll.humid - 5))
+	{
+		fprintf(stderr, "Dry enough (-5)\n");
+		tooMoist = false;
+		debounceTooMoist = false;
+	}
+	else if(debounceTooMoist)
+	{
+		fprintf(stderr, "Debounce, drying Air further\n");
+	}
+	
+	
+	//Handle way of drying air
 	if(tooMoist)
 	{
 		fprintf(stderr, "Too Moist, suggesting Heater ON\n");
@@ -34,11 +55,12 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		ventilTarget = true;
 	}
 	
-	if(heaterTarget && ist.temp > soll.temp + 3 && ist.temp < 20)	//magic Temperature at which heater just ventilates
+	if(heaterTarget && ist.temp > soll.temp + 3 && ist.temp < 22)	//magic Temperature at which heater just ventilates
 	{
 		fprintf(stderr, "Too Hot (+3), ignoring moisture, suggesting heater OFF\n");
 		heaterTarget = false;
 	}
+	//----
 	
 	if(heaterTarget != heat->getStatus())
 	{

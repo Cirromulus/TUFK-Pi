@@ -208,10 +208,15 @@ class Tempcontrol
 {
 	Actuator* heat;
 	Actuator* vent;
+	
+	bool debounceTooHot;
+	bool debounceTooMoist;
 
 public:
 	inline
-	Tempcontrol(Actuator* heater, Actuator* ventilator) : heat(heater), vent(ventilator)
+	Tempcontrol(Actuator* heater, Actuator* ventilator) : 
+			heat(heater), vent(ventilator),
+			debounceTooHot(false), debounceTooMoist(false)
 	{};
 	void
 	calcActions(const TempHumid& ist, const TempHumid& soll);
