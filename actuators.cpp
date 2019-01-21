@@ -24,15 +24,15 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 		fprintf(stderr, "Debounce, keeping Heater ON\n");
 	}
 	
-	if(!debounceTooMoist && ist.humid > (soll.humid + 5))
+	if(!debounceTooMoist && ist.humid > (soll.humid + 2.5))
 	{
-		fprintf(stderr, "Too humid (+5)\n");
+		fprintf(stderr, "Too humid (+2.5)\n");
 		tooMoist = true;
 		debounceTooMoist = true;
 	}
-	else if(debounceTooMoist && ist.humid < (soll.humid - 5))
+	else if(debounceTooMoist && ist.humid < (soll.humid - 2.5))
 	{
-		fprintf(stderr, "Dry enough (-5)\n");
+		fprintf(stderr, "Dry enough (-2.5)\n");
 		tooMoist = false;
 		debounceTooMoist = false;
 	}
