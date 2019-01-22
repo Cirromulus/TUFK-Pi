@@ -207,8 +207,6 @@ int main (int argc, char *argv[])
 		cerr << "Invalid config from server, loading local file" << endl;
 		config.reloadFromFile();
 	}
-	lastServerConnection = time(NULL);
-	
 	
 	target = config.getTempHumid();
 
@@ -275,12 +273,13 @@ int main (int argc, char *argv[])
 		if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
 		{
 			logToServer(config.getServerURI(), curr);
+			lastServerConnection = time(NULL);
+			
 			if(!getConfigFromServer(config.getServerURI(), config))
 			{
 				cerr << "Invalid config from server, loading local file" << endl;
 				config.reloadFromFile();
 			}
-			lastServerConnection = time(NULL);
 		}
 		logCsv(curr, heat.getStatus(), vent.getStatus());
 		last = curr;
