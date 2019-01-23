@@ -44,7 +44,7 @@ void Config::generateDefaultValues(string name)
 	doc.SaveFile( name.c_str() );
 };
 
-bool isComplete(const tinyxml2::XMLDocument& document)
+bool Config::isComplete(const tinyxml2::XMLDocument& document)
 {
 	const XMLElement* elem = document.FirstChildElement("Config");
 	if(elem == nullptr)
