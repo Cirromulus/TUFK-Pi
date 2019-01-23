@@ -94,50 +94,50 @@ bool Config::reloadFromString(std::string xml)
 	return true;
 }
 
-TempHumid Config::getTempHumid()
+const TempHumid Config::getTempHumid()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return TempHumid(elem->FindAttribute("targetTemperature")->FloatValue(),
 				     elem->FindAttribute("targetHumidity")->FloatValue());
 };
 
-float Config::getTempLowerLimit()
+const float Config::getTempLowerLimit()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("temp_lower_limit")->FloatValue();
 }
 
-float Config::getTempUpperLimit()
+const float Config::getTempUpperLimit()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("temp_upper_limit")->FloatValue();
 }
 
-float Config::getHumidLowerLimit()
+const float Config::getHumidLowerLimit()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("humid_lower_limit")->FloatValue();
 }
 
-float Config::getHumidUpperLimit()
+const float Config::getHumidUpperLimit()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("humid_upper_limit")->FloatValue();
 }
 
-uint32_t Config::getSamplingPeriod()
+const uint32_t Config::getSamplingPeriod()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("samplingPeriodSeconds")->IntValue();
 }
 
-uint32_t Config::getServerConnectPeriod()
+const uint32_t Config::getServerConnectPeriod()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("serverConnectionPeriodSeconds")->IntValue();
 }
 
-string Config::getServerURI()
+const string Config::getServerURI()
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("serverURI")->Value();
