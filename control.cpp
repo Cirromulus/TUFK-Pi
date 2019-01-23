@@ -205,7 +205,7 @@ int main (int argc, char *argv[])
 	}
 	else
 	{
-		//cout << "Server Config OK" << endl;
+		cout << "Server Config OK" << endl;
 		lastServerConnection = time(NULL);
 	}
 
