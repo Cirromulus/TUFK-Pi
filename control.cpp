@@ -201,7 +201,6 @@ int main (int argc, char *argv[])
 	if(!getConfigFromServer(config.getServerURI(), config))
 	{
 		cerr << "Invalid config from server, loading local file" << endl;
-		config.reloadFromFile();
 	}
 	else
 	{
@@ -269,8 +268,11 @@ int main (int argc, char *argv[])
 
 			if(!getConfigFromServer(config.getServerURI(), config))
 			{
-				cerr << "Invalid config from server, loading local file" << endl;
-				config.reloadFromFile();
+				cerr << "Invalid config from server, using last valid" << endl;
+			}
+			else
+			{
+				cout << "Server Config OK" << endl;
 			}
 		}
 		logCsv(curr, heat.getStatus(), vent.getStatus());
