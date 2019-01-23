@@ -31,10 +31,6 @@ bool wasFireSinceLastUpdate;
 bool wasHeaterOn;
 bool wasVentOn;
 
-void printCsvHeader()
-{
-	printf("\"Unix_Timestamp\",\"Temperature_in_°C\",\"Humidity_in_Percent\",\"Heater\",\"Vent\"\n");
-}
 
 void logToServer(string serverURI, const TempHumid& th)
 {
@@ -42,7 +38,7 @@ void logToServer(string serverURI, const TempHumid& th)
 		wasMovementSinceLastUpdate << 2 |
 		wasHeaterOn << 1 |
 		wasVentOn;
-	
+
 	try {
 		curlpp::Cleanup cleaner;
 		curlpp::Easy request;
@@ -138,7 +134,7 @@ void ohNoez()
 	//FIXME This deactivates the Smokedetector.
 	wasFireSinceLastUpdate = true;
 	return;
-	
+
 	if(globalBeeper != nullptr)
 	{
 		globalBeeper->actuate(true);
@@ -180,8 +176,6 @@ void movementChanged()
 
 int main (int argc, char *argv[])
 {
-	TempHumid target;
-
 	done = false;
 	wasMovementSinceLastUpdate = false;
 	wasFireSinceLastUpdate = false;
@@ -202,15 +196,20 @@ int main (int argc, char *argv[])
 	}
 
 	Config config(argv[1]);
+	unsigned long lastServerConnection = 0;
+
 	if(!getConfigFromServer(config.getServerURI(), config))
 	{
 		cerr << "Invalid config from server, loading local file" << endl;
 		config.reloadFromFile();
 	}
-	
-	target = config.getTempHumid();
+	else
+	{
+		//cout << "Server Config OK" << endl;
+		lastServerConnection = time(NULL);
+	}
 
-	fprintf(stderr, "Target: %0.2f °C, %0.2f%%\n", target.temp, target.humid);
+	printf("Target: %0.2f °C, %0.2f%%\n", config.getTempHumid().temp, config.getTempHumid().humid);
 
 	if (wiringPiSetup () == -1)
 	{
@@ -244,17 +243,10 @@ int main (int argc, char *argv[])
 
 
 	Tempcontrol tempcontrol(&heat, &vent);
-	printCsvHeader();
 	TempHumid curr, last;
-	unsigned long lastServerConnection = 0;
+
 	while (!done)
 	{
-		TempHumid newTarget = config.getTempHumid();
-		if(newTarget != target)
-		{
-			target = newTarget;
-			fprintf(stderr, "New target: %0.2f C, %0.2f%%\n", target.temp, target.humid);
-		}
 		int ret = read_dht22_dat(curr, DHT22PIN);
 		if(ret < 0)
 		{
@@ -266,15 +258,15 @@ int main (int argc, char *argv[])
 			//Unterdrücke fehlerhafte samples
 			continue;
 		}
-		
-		tempcontrol.calcActions(curr, target);
+
+		tempcontrol.calcActions(curr, config);
 		wasHeaterOn |= heat.getStatus();
 		wasVentOn |= vent.getStatus();
 		if(time(NULL) > lastServerConnection + config.getServerConnectPeriod())
 		{
 			logToServer(config.getServerURI(), curr);
 			lastServerConnection = time(NULL);
-			
+
 			if(!getConfigFromServer(config.getServerURI(), config))
 			{
 				cerr << "Invalid config from server, loading local file" << endl;

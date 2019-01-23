@@ -1,21 +1,24 @@
 #include "actuators.hpp"
 
 
-void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
+void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 {
+	TempHumid soll = config.getTempHumid();
+
 	bool heaterTarget = false;
 	bool ventilTarget = false;
 	bool tooMoist = false;
-	
-	if(!debounceTooHot && ist.temp < soll.temp - 1)
+
+
+	if(!debounceTooHot && ist.temp < soll.temp - config.getTempLowerLimit())
 	{
-		fprintf(stderr, "Too cold (-1), suggesting heater ON\n");
+		fprintf(stderr, "Too cold (-%f), suggesting heater ON\n", config.getTempLowerLimit());
 		heaterTarget = true;
 		debounceTooHot = true;
 	}
-	else if(debounceTooHot && ist.temp > soll.temp + 1)
+	else if(debounceTooHot && ist.temp > soll.temp + config.getTempUpperLimit())
 	{
-		fprintf(stderr, "Too hot (+1), suggesting Heater OFF\n");
+		fprintf(stderr, "Too hot (+%f), suggesting Heater OFF\n", config.getTempUpperLimit());
 		heaterTarget = false;
 		debounceTooHot = false;
 	}
@@ -23,16 +26,16 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 	{
 		fprintf(stderr, "Debounce, keeping Heater ON\n");
 	}
-	
-	if(!debounceTooMoist && ist.humid > (soll.humid + 2.5))
+
+	if(!debounceTooMoist && ist.humid > (soll.humid + config.getHumidUpperLimit()))
 	{
-		fprintf(stderr, "Too humid (+2.5)\n");
+		fprintf(stderr, "Too humid (+%f)\n", config.getHumidUpperLimit());
 		tooMoist = true;
 		debounceTooMoist = true;
 	}
-	else if(debounceTooMoist && ist.humid < (soll.humid - 2.5))
+	else if(debounceTooMoist && ist.humid < (soll.humid - config.getHumidLowerLimit()))
 	{
-		fprintf(stderr, "Dry enough (-2.5)\n");
+		fprintf(stderr, "Dry enough (-%f)\n", config.getHumidLowerLimit());
 		tooMoist = false;
 		debounceTooMoist = false;
 	}
@@ -40,28 +43,28 @@ void Tempcontrol::calcActions(const TempHumid& ist, const TempHumid& soll)
 	{
 		fprintf(stderr, "Debounce, drying Air further\n");
 	}
-	
-	
+
+
 	//Handle way of drying air
 	if(tooMoist)
 	{
 		fprintf(stderr, "Too Moist, suggesting Heater ON\n");
 		heaterTarget = true;
 	}
-	
+
 	if(tooMoist && ist.temp > soll.temp + 2)
 	{
 		fprintf(stderr, "Too Moist and too hot (+2) suggesting Vent ON\n");
 		ventilTarget = true;
 	}
-	
+
 	if(heaterTarget && ist.temp > soll.temp + 3 && ist.temp < 22)	//magic Temperature at which heater just ventilates
 	{
 		fprintf(stderr, "Too Hot (+3), ignoring moisture, suggesting heater OFF\n");
 		heaterTarget = false;
 	}
 	//----
-	
+
 	if(heaterTarget != heat->getStatus())
 	{
 		heat->actuate(heaterTarget);
@@ -108,8 +111,8 @@ Heater::actuate(bool newState)
 			system("irsend SEND_START HEATER SWING");
 			delay(150);
 			system("irsend SEND_STOP HEATER SWING");
-			
-			// this would disable the heating again... 
+
+			// this would disable the heating again...
 			//delay(250);
 			//system("irsend SEND_ONCE HEATER MODE");
 			//delay(250);

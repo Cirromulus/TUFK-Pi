@@ -1,6 +1,7 @@
 #pragma once
 
 #include "temptypes.hpp"
+#include "xml.hpp"
 
 #include <wiringPi.h>
 #include <stdlib.h>
@@ -146,18 +147,18 @@ class Heater : public Relaisswitch
 	static constexpr uint32_t magicStartupTime = 5; //actually 10, but safety first...
 	static constexpr uint32_t magicCooloffTime = 31; //actually 10, but safety first...
 public:
-	
+
 	Heater(int pin) : Relaisswitch(pin)
 	{
 		init();
 	}
-	
+
 	inline
 	Heater(int pin, Led* statusLed) : Relaisswitch(pin), statusLed(statusLed)
 	{
 		init();
 	}
-	
+
 	inline void
 	init()
 	{
@@ -165,7 +166,7 @@ public:
 		active = false;
 		started = time(NULL);
 	}
-	
+
 	inline void
 	blinkDelay(unsigned millis)
 	{
@@ -186,7 +187,7 @@ public:
 			}
 		}
 	}
-	
+
 	inline
 	~Heater()
 	{
@@ -199,7 +200,7 @@ public:
 			fprintf(stderr, "Done\n");
 		}
 	}
-	
+
 	void
 	actuate(bool newState) override;
 };
@@ -208,16 +209,16 @@ class Tempcontrol
 {
 	Actuator* heat;
 	Actuator* vent;
-	
+
 	bool debounceTooHot;
 	bool debounceTooMoist;
 
 public:
 	inline
-	Tempcontrol(Actuator* heater, Actuator* ventilator) : 
+	Tempcontrol(Actuator* heater, Actuator* ventilator) :
 			heat(heater), vent(ventilator),
 			debounceTooHot(false), debounceTooMoist(false)
 	{};
 	void
-	calcActions(const TempHumid& ist, const TempHumid& soll);
+	calcActions(const TempHumid& ist, const Config& config);
 };

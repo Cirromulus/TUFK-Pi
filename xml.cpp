@@ -32,7 +32,11 @@ void Config::generateDefaultValues(string name)
 	doc.LinkEndChild( decl );
 	XMLElement * element = doc.NewElement( "Config" );
 	element->SetAttribute("targetTemperature", 16.);
+	element->SetAttribute("temp_upper_limit", 1.);
+	element->SetAttribute("temp_lower_limit", 1.);
 	element->SetAttribute("targetHumidity", 65.);
+	element->SetAttribute("humid_upper_limit", 2.5);
+	element->SetAttribute("humid_lower_limit", 2.5);
 	element->SetAttribute("samplingPeriodSeconds", 5);
 	element->SetAttribute("serverConnectionPeriodSeconds", 60);
 	element->SetAttribute("serverURI", "http://wiewarmistesbei.exsilencio.de/");
@@ -40,19 +44,22 @@ void Config::generateDefaultValues(string name)
 	doc.SaveFile( name.c_str() );
 };
 
-bool Config::reloadFromFile()
+bool isComplete(const tinyxml2::XMLDocument& document)
 {
-	if(config.LoadFile(filename.c_str()) != XML_SUCCESS)
-	{
-		cerr << "Could not read config file " << filename << " " << config.ErrorName() << endl;
-		return false;
-	}
-	const XMLElement* elem = config.FirstChildElement("Config");
+	const XMLElement* elem = document.FirstChildElement("Config");
 	if(elem == nullptr)
 		return false;
 	if(elem->FindAttribute("targetTemperature") == nullptr)
 		return false;
+	if(elem->FindAttribute("temp_lower_limit") == nullptr)
+		return false;
+	if(elem->FindAttribute("temp_upper_limit") == nullptr)
+		return false;
 	if(elem->FindAttribute("targetHumidity") == nullptr)
+		return false;
+	if(elem->FindAttribute("humid_lower_limit") == nullptr)
+		return false;
+	if(elem->FindAttribute("humid_upper_limit") == nullptr)
 		return false;
 	if(elem->FindAttribute("samplingPeriodSeconds") == nullptr)
 		return false;
@@ -63,6 +70,16 @@ bool Config::reloadFromFile()
 	return true;
 }
 
+bool Config::reloadFromFile()
+{
+	if(config.LoadFile(filename.c_str()) != XML_SUCCESS)
+	{
+		cerr << "Could not read config file " << filename << " " << config.ErrorName() << endl;
+		return false;
+	}
+	return isComplete(config);
+}
+
 bool Config::reloadFromString(std::string xml)
 {
 	tinyxml2::XMLDocument doc;
@@ -71,18 +88,7 @@ bool Config::reloadFromString(std::string xml)
 		cerr << "Could not read config " << xml << " " << doc.ErrorName() << endl;
 		return false;
 	}
-	const XMLElement* elem = doc.FirstChildElement("Config");
-	if(elem == nullptr)
-		return false;
-	if(elem->FindAttribute("targetTemperature") == nullptr)
-		return false;
-	if(elem->FindAttribute("targetHumidity") == nullptr)
-		return false;
-	if(elem->FindAttribute("samplingPeriodSeconds") == nullptr)
-		return false;
-	if(elem->FindAttribute("serverConnectionPeriodSeconds") == nullptr)
-		return false;
-	if(elem->FindAttribute("serverURI") == nullptr)
+	if(!isComplete(doc))
 		return false;
 	config.Parse(xml.c_str(), xml.length());
 	return true;
@@ -94,6 +100,30 @@ TempHumid Config::getTempHumid()
 	return TempHumid(elem->FindAttribute("targetTemperature")->FloatValue(),
 				     elem->FindAttribute("targetHumidity")->FloatValue());
 };
+
+float Config::getTempLowerLimit()
+{
+	const XMLElement* elem = config.FirstChildElement("Config");
+	return elem->FindAttribute("temp_lower_limit")->FloatValue();
+}
+
+float Config::getTempUpperLimit()
+{
+	const XMLElement* elem = config.FirstChildElement("Config");
+	return elem->FindAttribute("temp_upper_limit")->FloatValue();
+}
+
+float Config::getHumidLowerLimit()
+{
+	const XMLElement* elem = config.FirstChildElement("Config");
+	return elem->FindAttribute("humid_lower_limit")->FloatValue();
+}
+
+float Config::getHumidUpperLimit()
+{
+	const XMLElement* elem = config.FirstChildElement("Config");
+	return elem->FindAttribute("humid_upper_limit")->FloatValue();
+}
 
 uint32_t Config::getSamplingPeriod()
 {
