@@ -17,14 +17,15 @@ tinyxml2/tinyxml2.o: tinyxml2/tinyxml2.cpp
 xml.o: xml.cpp tinyxml2/tinyxml2.o
 	$(CC) $(CFLAGS) -c xml.cpp
 
-logger: logger.cpp dht22.o
+logger: logger.cpp dht22.o xml.o
 	$(CC) $(CFLAGS) -o logger dht22.o logger.cpp -lwiringPi
 
-control: control.cpp dht22.o actuators.o xml.o
+controller: control.cpp dht22.o actuators.o xml.o
 	$(CC) $(CFLAGS) -o controller dht22.o actuators.o xml.o control.cpp -lwiringPi -lcurlpp -lcurl -ltinyxml2 -Ltinyxml2
 
-test: test.cpp dht22.o actuators.o
-	$(CC) $(CFLAGS) -o tester dht22.o actuators.o test.cpp -lwiringPi
+tester: test.cpp dht22.o actuators.o xml.o
+	#todo: remove xml abhängigkeit
+	$(CC) $(CFLAGS) -o tester dht22.o actuators.o xml.o test.cpp -lwiringPi -ltinyxml2 -Ltinyxml2
 
 init:
 	sudo cp -r etc/lirc/* /etc/lirc/

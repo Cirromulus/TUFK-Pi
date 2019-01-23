@@ -25,6 +25,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 	else if(debounceTooHot)
 	{
 		fprintf(stderr, "Debounce, keeping Heater ON\n");
+		heaterTarget = true;
 	}
 
 	if(!debounceTooMoist && ist.humid > (soll.humid + config.getHumidUpperLimit()))
@@ -42,6 +43,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 	else if(debounceTooMoist)
 	{
 		fprintf(stderr, "Debounce, drying Air further\n");
+		tooMoist = true;
 	}
 
 
