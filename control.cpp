@@ -204,7 +204,7 @@ int main (int argc, char *argv[])
 	}
 	else
 	{
-		cout << "Server Config OK" << endl;
+		cout << "Server Config OK, target " << config.getTempHumid().temp << " °C" << endl;
 		lastServerConnection = time(NULL);
 	}
 
