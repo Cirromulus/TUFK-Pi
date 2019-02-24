@@ -31,6 +31,10 @@ bool wasFireSinceLastUpdate;
 bool wasHeaterOn;
 bool wasVentOn;
 
+void printCurlVersion()
+{
+	std::cout << curl_version() << std::endl;
+}
 
 void logToServer(string serverURI, const TempHumid& th)
 {
@@ -162,6 +166,7 @@ void movementChanged()
 		{
 			//fprintf(stderr, "Movement detected\n");
 			wasMovementSinceLastUpdate = true;
+			system("/home/pi/survPict.sh &");
 		}
 		else
 		{
@@ -194,7 +199,7 @@ int main (int argc, char *argv[])
 		printf ("usage: %s configfile\n\tconfigfile will be created if it does not exist\n", argv[0]);
 		return -EINVAL;
 	}
-
+	printCurlVersion();
 	Config config(argv[1]);
 	unsigned long lastServerConnection = 0;
 
@@ -272,7 +277,7 @@ int main (int argc, char *argv[])
 			}
 			else
 			{
-				cout << "Server Config OK" << endl;
+				cout << "Server Config OK, target " << config.getTempHumid().temp << " °C" << endl;
 			}
 		}
 		logCsv(curr, heat.getStatus(), vent.getStatus());
