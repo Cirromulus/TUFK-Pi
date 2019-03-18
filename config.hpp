@@ -3,9 +3,9 @@ static constexpr unsigned EXPANDER_ADDR = 0x27;
 static constexpr unsigned EXPANDER_BASE_PIN = 100;
 static constexpr unsigned EXPANDER_ITB  = 7;
 
-static constexpr unsigned HEATERPIN     = EXPANDER_BASE_PIN + 0;
-static constexpr unsigned VENTILATORPIN = EXPANDER_BASE_PIN + 1;
-static constexpr unsigned FRIDGEPIN     = EXPANDER_BASE_PIN + 2;
+static constexpr unsigned VENTILATORPIN = EXPANDER_BASE_PIN + 0;
+static constexpr unsigned FRIDGEPIN     = EXPANDER_BASE_PIN + 1;
+static constexpr unsigned HEATERPIN     = EXPANDER_BASE_PIN + 2;
 static constexpr unsigned PAAMPPIN      = EXPANDER_BASE_PIN + 3;
 
 static constexpr unsigned GREENLED      = EXPANDER_BASE_PIN + 8 + 0;
