@@ -20,7 +20,7 @@ xml.o: xml.cpp tinyxml2/tinyxml2.o
 logger: logger.cpp dht22.o xml.o
 	$(CC) $(CFLAGS) -o logger dht22.o logger.cpp -lwiringPi
 
-controller: control.cpp dht22.o actuators.o xml.o
+controller: config.hpp control.cpp dht22.o actuators.o xml.o
 	$(CC) $(CFLAGS) -o controller dht22.o actuators.o xml.o control.cpp -lwiringPi -lcurlpp -lcurl -ltinyxml2 -Ltinyxml2
 
 tester: test.cpp dht22.o actuators.o xml.o
