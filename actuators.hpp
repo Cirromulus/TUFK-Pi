@@ -1,7 +1,6 @@
 #pragma once
 
 #include "temptypes.hpp"
-#include "xml.hpp"
 
 #include <wiringPi.h>
 #include <stdlib.h>
@@ -140,7 +139,6 @@ public:
 
 class Heater : public Relaisswitch
 {
-	bool heating = false;
 	Led* statusLed = nullptr;
 	time_t started;
 	bool bootupElapsed = false;
