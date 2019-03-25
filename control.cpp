@@ -243,7 +243,7 @@ int main (int argc, char *argv[])
 	Sensor pir(PIRPIN);
 	movementSensor = &pir;
 	movementLed = &green;
-	pir.registerInterrupt(Sensor::Sensitivity::both, movementChanged);
+	//pir.registerInterrupt(Sensor::Sensitivity::both, movementChanged);
 
 
 	Tempcontrol tempcontrol(&heat, &vent);
