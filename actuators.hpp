@@ -1,6 +1,7 @@
 #pragma once
 
 #include "temptypes.hpp"
+#include "xml.hpp"
 
 #include <wiringPi.h>
 #include <stdlib.h>

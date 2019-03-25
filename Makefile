@@ -3,7 +3,7 @@ CC = g++
 #arm-linux-gnueabihf-g++
 
 
-all: logger control
+all: logger controller
 
 dht22.o: dht22.cpp
 	$(CC) $(CFLAGS) -c dht22.cpp -lwiringPi

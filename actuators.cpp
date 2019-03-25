@@ -97,14 +97,14 @@ Heater::actuate(bool newState)
 	{
 		delay(150);
 		system("irsend SEND_START HEATER ONOFF");
-		printf(stderr, "SEND_START HEATER ONOFF ");
+		fprintf(stderr, "SEND_START HEATER ONOFF ");
 		delay(250);
 		system("irsend SEND_STOP HEATER ONOFF");
 		if(newState)
 		{
 			delay(250);	//This activates the actual Heating
 			system("irsend SEND_START HEATER UP");
-			printf(stderr, "SEND_START HEATER UP ");
+			fprintf(stderr, "SEND_START HEATER UP ");
 			delay(250);
 			system("irsend SEND_STOP HEATER UP");
 			delay(250);
@@ -113,7 +113,7 @@ Heater::actuate(bool newState)
 			//system("irsend SEND_STOP HEATER DOWN");
 			//delay(250);
 			system("irsend SEND_START HEATER SWING");
-    		printf(stderr, "SEND_START HEATER SWING ");
+    			fprintf(stderr, "SEND_START HEATER SWING ");
 			delay(150);
 			system("irsend SEND_STOP HEATER SWING");
 
@@ -123,7 +123,7 @@ Heater::actuate(bool newState)
 			//delay(250);
 			//system("irsend SEND_ONCE HEATER MODE");
 		}
-		printf(stderr, "\n");
+		fprintf(stderr, "\n");
 		active = newState;
 		if(statusLed != nullptr)
 		{
