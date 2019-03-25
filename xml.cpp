@@ -32,12 +32,13 @@ void Config::generateDefaultValues(string name)
 	doc.LinkEndChild( decl );
 	XMLElement * element = doc.NewElement( "Config" );
 	element->SetAttribute("targetTemperature", 16.);
-	element->SetAttribute("temp_upper_limit", 1.);
-	element->SetAttribute("temp_lower_limit", 1.);
+	element->SetAttribute("temp_max_delta", 3.);
+	element->SetAttribute("temp_upper_limit", 2.);
+	element->SetAttribute("temp_lower_limit", 0.);
 	element->SetAttribute("targetHumidity", 65.);
 	element->SetAttribute("humid_upper_limit", 2.5);
 	element->SetAttribute("humid_lower_limit", 2.5);
-	element->SetAttribute("samplingPeriodSeconds", 5);
+	element->SetAttribute("samplingPeriodSeconds", 15);
 	element->SetAttribute("serverConnectionPeriodSeconds", 60);
 	element->SetAttribute("serverURI", "http://wiewarmistesbei.exsilencio.de/");
 	doc.LinkEndChild( element );
@@ -50,6 +51,8 @@ bool Config::isComplete(const tinyxml2::XMLDocument& document)
 	if(elem == nullptr)
 		return false;
 	if(elem->FindAttribute("targetTemperature") == nullptr)
+		return false;
+	if(elem->FindAttribute("temp_max_delta") == nullptr)
 		return false;
 	if(elem->FindAttribute("temp_lower_limit") == nullptr)
 		return false;
@@ -111,6 +114,12 @@ float Config::getTempUpperLimit() const
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("temp_upper_limit")->FloatValue();
+}
+
+float Config::getTempMaxDelta() const
+{
+	const XMLElement* elem = config.FirstChildElement("Config");
+	return elem->FindAttribute("temp_max_delta")->FloatValue();
 }
 
 float Config::getHumidLowerLimit() const

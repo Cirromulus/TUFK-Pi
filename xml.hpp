@@ -17,6 +17,7 @@ public:
 	bool reloadFromFile();
 	bool reloadFromString(std::string xml);
 	TempHumid getTempHumid() const;
+	float getTempMaxDelta() const;
 	float getTempLowerLimit() const;
 	float getTempUpperLimit() const;
 	float getHumidLowerLimit() const;
