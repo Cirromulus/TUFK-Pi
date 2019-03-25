@@ -54,15 +54,15 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 		heaterTarget = true;
 	}
 
-	if(tooMoist && ist.temp > soll.temp + 2)
+	if(tooMoist && ist.temp > soll.temp + config.getTempUpperLimit())
 	{
-		fprintf(stderr, "Too Moist and too hot (+2) suggesting Vent ON\n");
+		fprintf(stderr, "Too Moist and too hot (+%d) suggesting Vent ON\n", config.getTempUpperLimit());
 		ventilTarget = true;
 	}
 
-	if(heaterTarget && ist.temp > soll.temp + 3 && ist.temp < 22)	//magic Temperature at which heater just ventilates
+	if(heaterTarget && ist.temp > soll.temp + config.getTempMaxDelta() && ist.temp < 22)	//magic Temperature at which heater just ventilates
 	{
-		fprintf(stderr, "Too Hot (+3), ignoring moisture, suggesting heater OFF\n");
+		fprintf(stderr, "Too Hot (+%d), ignoring moisture, suggesting heater OFF\n", config.getTempMaxDelta());
 		heaterTarget = false;
 	}
 	//----
