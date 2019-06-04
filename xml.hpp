@@ -22,7 +22,7 @@ public:
     {
         ventilator = 0,
         heater,
-        movement
+        movement,
         fire,
     };
 
