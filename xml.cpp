@@ -163,7 +163,7 @@ uint32_t Config::getActuatorOverrides() const
 Override Config::getActuatorOverride(uint16_t id) const
 {
     uint32_t overrides = getActuatorOverrides();
-    Override local = (overrides & (0b11 << id * 2)) >> id * 2;
+    Override local = static_cast<Override>((overrides & (0b11 << id * 2)) >> id * 2);
     switch(local)
     {
     case Override::none:
