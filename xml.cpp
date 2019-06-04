@@ -150,7 +150,7 @@ uint32_t Config::getServerConnectPeriod() const
 	return elem->FindAttribute("serverConnectionPeriodSeconds")->IntValue();
 }
 
-uint32_t getActuatorOverride() const
+uint32_t getActuatorOverrides() const
 {
     const XMLElement* elem = config.FirstChildElement("Config");
     if(elem->FindAttribute("actuatorOverride") == nullptr)
