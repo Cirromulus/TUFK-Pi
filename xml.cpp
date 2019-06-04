@@ -40,6 +40,7 @@ void Config::generateDefaultValues(string name)
 	element->SetAttribute("humid_lower_limit", 2.5);
 	element->SetAttribute("samplingPeriodSeconds", 15);
 	element->SetAttribute("serverConnectionPeriodSeconds", 60);
+	element->SetAttribute("actuatorOverride", 0);
 	element->SetAttribute("serverURI", "http://wiewarmistesbei.exsilencio.de/");
 	doc.LinkEndChild( element );
 	doc.SaveFile( name.c_str() );
@@ -92,7 +93,10 @@ bool Config::reloadFromString(std::string xml)
 		return false;
 	}
 	if(!isComplete(doc))
+	{
+    	cerr << "Config not complete: " << xml << endl;
 		return false;
+	}
 	config.Parse(xml.c_str(), xml.length());
 	return true;
 }
@@ -144,6 +148,32 @@ uint32_t Config::getServerConnectPeriod() const
 {
 	const XMLElement* elem = config.FirstChildElement("Config");
 	return elem->FindAttribute("serverConnectionPeriodSeconds")->IntValue();
+}
+
+uint32_t getActuatorOverride() const
+{
+    const XMLElement* elem = config.FirstChildElement("Config");
+    if(elem->FindAttribute("actuatorOverride") == nullptr)
+    {   //this defaults to 'no override'
+        return 0;
+    }
+    return elem->FindAttribute("actuatorOverride")->IntValue();
+}
+
+Override getActuatorOverride(uint16_t id) const
+{
+    uint32_t overrides = getActuatorOverrides();
+    uint16_t local = (overrides & (0b11 << id * 2)) >> id * 2;
+    switch(local)
+    {
+    case Override::none:
+    case Override::off:
+    case Override::on:
+        return local;
+    default:
+        cerr << "invalid override " << local << endl;
+    }
+    return  Override::none;
 }
 
 string Config::getServerURI() const

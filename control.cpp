@@ -38,10 +38,10 @@ void printCurlVersion()
 
 void logToServer(string serverURI, const TempHumid& th)
 {
-	uint32_t statusBits = wasFireSinceLastUpdate << 3 |
-		wasMovementSinceLastUpdate << 2 |
-		wasHeaterOn << 1 |
-		wasVentOn;
+	uint32_t statusBits = wasFireSinceLastUpdate << Statusposition::fire |
+		wasMovementSinceLastUpdate << Statusposition::movement |
+		wasHeaterOn << Statusposition::heater |
+		wasVentOn << Statusposition::ventilator;
 
 	try {
 		curlpp::Cleanup cleaner;
@@ -209,7 +209,7 @@ int main (int argc, char *argv[])
 	}
 	else
 	{
-		cout << "Server Config OK, target " << config.getTempHumid().temp << " °C" << endl;
+		cout << "Server Config OK" << endl;
 		lastServerConnection = time(NULL);
 	}
 

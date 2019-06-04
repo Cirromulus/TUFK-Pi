@@ -5,12 +5,27 @@
 
 #include <iostream>
 
+enum Override
+{
+    none = 0b00,
+    off  = 0b10,
+    on   = 0b11
+};
+
 class Config
 {
 	tinyxml2::XMLDocument config;
 	std::string filename;
 	bool isComplete(const tinyxml2::XMLDocument& document);
 public:
+    enum Statusposition
+    {
+        ventilator = 0,
+        heater,
+        movement
+        fire,
+    };
+
 	Config(std::string filename);
 	static bool fileExists(std::string name);
 	static void generateDefaultValues(std::string name);
@@ -24,5 +39,7 @@ public:
 	float getHumidUpperLimit() const;
 	uint32_t getSamplingPeriod() const;
 	uint32_t getServerConnectPeriod() const;
+	uint32_t getActuatorOverrides() const;
+	Override getActuatorOverride(uint16_t id) const;
 	std::string getServerURI() const;
 };

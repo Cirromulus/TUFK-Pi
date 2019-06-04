@@ -67,13 +67,21 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 	}
 	//----
 
-	if(heaterTarget != heat->getStatus())
+	if(config.getActuatorOverride(Config::heater) == Override::none && heaterTarget != heat->getStatus())
 	{
 		heat->actuate(heaterTarget);
 	}
-	if(ventilTarget != vent->getStatus())
+	else
+	{
+        heat->actuate(config.getActuatorOverride(Config::heater) == Override::on ? true : false);
+	}
+	if(config.getActuatorOverride(Config::ventilator) == Override::none && ventilTarget != vent->getStatus())
 	{
 		vent->actuate(ventilTarget);
+	}
+    else
+	{
+        vent->actuate(config.getActuatorOverride(onfig::ventilator) == Override::on ? true : false);
 	}
 }
 
