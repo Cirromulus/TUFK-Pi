@@ -38,10 +38,10 @@ void printCurlVersion()
 
 void logToServer(string serverURI, const TempHumid& th)
 {
-	uint32_t statusBits = wasFireSinceLastUpdate << Statusposition::fire |
-		wasMovementSinceLastUpdate << Statusposition::movement |
-		wasHeaterOn << Statusposition::heater |
-		wasVentOn << Statusposition::ventilator;
+	uint32_t statusBits = wasFireSinceLastUpdate << Config::Statusposition::fire |
+		wasMovementSinceLastUpdate << Config::Statusposition::movement |
+		wasHeaterOn << Config::Statusposition::heater |
+		wasVentOn << Config::Statusposition::ventilator;
 
 	try {
 		curlpp::Cleanup cleaner;
