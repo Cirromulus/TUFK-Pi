@@ -81,7 +81,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 	}
     else
 	{
-        vent->actuate(config.getActuatorOverride(onfig::ventilator) == Override::on ? true : false);
+        vent->actuate(config.getActuatorOverride(Config::ventilator) == Override::on ? true : false);
 	}
 }
 
