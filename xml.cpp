@@ -150,7 +150,7 @@ uint32_t Config::getServerConnectPeriod() const
 	return elem->FindAttribute("serverConnectionPeriodSeconds")->IntValue();
 }
 
-uint32_t getActuatorOverrides() const
+uint32_t Config::getActuatorOverrides() const
 {
     const XMLElement* elem = config.FirstChildElement("Config");
     if(elem->FindAttribute("actuatorOverride") == nullptr)
@@ -160,7 +160,7 @@ uint32_t getActuatorOverrides() const
     return elem->FindAttribute("actuatorOverride")->IntValue();
 }
 
-Override getActuatorOverride(uint16_t id) const
+Override Config::getActuatorOverride(uint16_t id) const
 {
     uint32_t overrides = getActuatorOverrides();
     uint16_t local = (overrides & (0b11 << id * 2)) >> id * 2;
