@@ -135,8 +135,9 @@ void ohNoez()
 			return;
 		}
 	}
-	//FIXME This deactivates the Smokedetector.
 	wasFireSinceLastUpdate = true;
+
+	//FIXME This deactivates the Smokedetector.
 	return;
 
 	if(globalBeeper != nullptr)
@@ -233,11 +234,9 @@ int main (int argc, char *argv[])
 
 	SmokeDetector smokeDetector(GASSENS);
 	globalSmoke = &smokeDetector;
-	if(smokeDetector.getValue())
+	if(smokeDetector.getValue() && config.getActuatorOverride(Config::fire) != Override::off)
 	{
-		beeper.actuate(true);
-		fprintf(stderr, "Oh NOEZ, es brennt!\n");
-		return EXIT_FAILURE;
+		ohNoez();
 	}
 	smokeDetector.registerInterrupt(Sensor::Sensitivity::both, ohNoez);
 	Sensor pir(PIRPIN);

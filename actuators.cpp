@@ -77,7 +77,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
 	else
 	{
 	    printf("Overriding heater to %d\n", config.getActuatorOverride(Config::heater));
-        heat->actuate(config.getActuatorOverride(Config::heater) == Override::on ? true : false);
+        heat->actuate(config.getActuatorOverride(Config::heater) == Override::on);
 	}
 
 	if(config.getActuatorOverride(Config::ventilator) == Override::none )
@@ -90,7 +90,7 @@ void Tempcontrol::calcActions(const TempHumid& ist, const Config& config)
     else
 	{
 	    printf("Overriding vent to %d\n", config.getActuatorOverride(Config::ventilator));
-        vent->actuate(config.getActuatorOverride(Config::ventilator) == Override::on ? true : false);
+	    vent->actuate(config.getActuatorOverride(Config::ventilator) == Override::on);
 	}
 }
 
