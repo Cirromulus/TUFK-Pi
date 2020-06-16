@@ -218,6 +218,7 @@ int main (int argc, char *argv[])
 
 	if (wiringPiSetup () == -1)
 	{
+		fprintf(stderr, "Could not init wiringPi!\n");
 		exit(EXIT_FAILURE);
 	}
 	mcp23017Setup (EXPANDER_BASE_PIN, EXPANDER_ADDR) ;
