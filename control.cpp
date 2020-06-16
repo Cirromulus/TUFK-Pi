@@ -206,7 +206,7 @@ int main (int argc, char *argv[])
 
 	if(!getConfigFromServer(config.getServerURI(), config))
 	{
-		cerr << "Invalid config from server, loading local file" << endl;
+		cerr << "Invalid config from server, using local file" << endl;
 	}
 	else
 	{
